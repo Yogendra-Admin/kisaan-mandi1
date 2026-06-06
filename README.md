@@ -1,0 +1,1 @@
+# Kisan_mandi_django_project
