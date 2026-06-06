@@ -1,0 +1,698 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sign In — Kisaan Mandi{% endblock %}
+{% block navbar %}{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif; }
+
+/* ═══════════════════════════════════════
+   FULL PAGE LAYOUT
+═══════════════════════════════════════ */
+.lp-wrap {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* ═══════════════════════════════════════
+   LEFT — HERO PANEL
+═══════════════════════════════════════ */
+.lp-hero {
+    flex: 1.15;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+/* Background slideshow */
+.hero-slides { position: absolute; inset: 0; z-index: 0; }
+.hero-slide {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.8s cubic-bezier(.4,0,.2,1);
+    transform: scale(1.05);
+    transition: opacity 1.8s ease, transform 8s ease;
+}
+.hero-slide.active { opacity: 1; transform: scale(1); }
+
+/* Multi-layer overlay */
+.hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background:
+        linear-gradient(to top, rgba(5,25,10,0.92) 0%, rgba(8,40,20,0.65) 40%, rgba(15,60,30,0.35) 100%),
+        linear-gradient(to right, rgba(5,25,10,0.2) 0%, transparent 60%);
+}
+
+/* Decorative mesh grid */
+.hero-grid {
+    position: absolute; inset: 0; z-index: 2; opacity: 0.04;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
+
+/* Hero content */
+.hero-content {
+    position: relative; z-index: 3;
+    padding: 48px 52px;
+    color: white;
+}
+
+.hero-top {
+    position: absolute; top: 36px; left: 52px; right: 52px;
+    z-index: 3;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.hero-brand {
+    display: flex; align-items: center; gap: 10px;
+}
+.hero-brand-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 15px rgba(34,197,94,0.4);
+}
+.hero-brand-name { font-size: 1.1rem; font-weight: 700; color: white; line-height: 1.1; }
+.hero-brand-sub { font-size: 0.62rem; color: rgba(255,255,255,0.6); }
+
+.hero-slide-dots {
+    display: flex; gap: 7px; align-items: center;
+}
+.h-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    cursor: pointer; transition: all 0.3s;
+    border: none; padding: 0;
+}
+.h-dot.active { background: #22c55e; width: 20px; border-radius: 4px; }
+
+/* Feature chips */
+.hero-chips {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 28px;
+}
+.chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 100px;
+    padding: 7px 16px;
+    font-size: 0.8rem; font-weight: 500;
+    color: rgba(255,255,255,0.9);
+}
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+
+/* Animated headline */
+.hero-headline {
+    font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    letter-spacing: -1.5px;
+}
+.hero-headline .hl-white { color: white; }
+.hero-headline .hl-green {
+    background: linear-gradient(135deg, #4ade80, #22c55e, #86efac);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-desc {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.75;
+    max-width: 400px;
+    margin-bottom: 40px;
+    font-weight: 400;
+}
+
+/* Stats row */
+.hero-stats {
+    display: flex; gap: 0;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+.stat-item {
+    flex: 1; padding: 22px 20px;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+    font-size: 1.9rem; font-weight: 800;
+    color: #4ade80;
+    line-height: 1;
+}
+.stat-lbl { font-size: 0.73rem; color: rgba(255,255,255,0.6); margin-top: 5px; font-weight: 500; }
+
+/* Testimonial strip */
+.hero-testimonial {
+    margin-top: 28px;
+    display: flex; align-items: center; gap: 14px;
+}
+.t-avatars { display: flex; }
+.t-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    object-fit: cover;
+    margin-left: -10px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; color: white; font-weight: 700;
+}
+.t-avatars .t-avatar:first-child { margin-left: 0; }
+.t-text { font-size: 0.8rem; color: rgba(255,255,255,0.75); font-weight: 400; line-height: 1.4; }
+.t-text strong { color: #4ade80; }
+
+/* ═══════════════════════════════════════
+   RIGHT — LOGIN PANEL
+═══════════════════════════════════════ */
+.lp-form {
+    flex: 0 0 480px;
+    width: 480px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 52px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: -20px 0 60px rgba(0,0,0,0.18);
+}
+
+/* Subtle decorative circle */
+.form-deco {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.deco-1 {
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(34,197,94,0.07), transparent);
+    top: -80px; right: -80px;
+}
+.deco-2 {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(34,197,94,0.05), transparent);
+    bottom: -50px; left: -50px;
+}
+
+/* Top bar */
+.form-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 48px;
+}
+.back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.82rem; font-weight: 600;
+    color: #6b7280; text-decoration: none;
+    transition: color 0.2s;
+}
+.back-link:hover { color: #16a34a; }
+
+/* Language select */
+.lang-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 100px;
+    padding: 6px 14px 6px 10px;
+    transition: all 0.2s;
+}
+.lang-pill:focus-within {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+}
+.lang-icon { font-size: 0.95rem; line-height: 1; }
+.lang-sel {
+    appearance: none; -webkit-appearance: none;
+    border: none; background: transparent;
+    font-size: 0.8rem; font-weight: 700;
+    color: #16a34a; cursor: pointer; outline: none;
+    padding-right: 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%2316a34a'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif;
+}
+.lang-sel option { background: #fff; color: #16a34a; font-weight: 600; }
+
+/* Heading */
+.form-heading { margin-bottom: 36px; }
+.form-eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 0.75rem; font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    background: #f0fdf4;
+    border-radius: 100px;
+    padding: 5px 14px;
+    margin-bottom: 14px;
+}
+.form-title {
+    font-size: 2rem; font-weight: 800;
+    color: #0f172a; line-height: 1.2;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+}
+.form-sub {
+    font-size: 0.9rem; color: #6b7280; font-weight: 400; line-height: 1.6;
+}
+
+/* Inputs — floating label style */
+.field-group { margin-bottom: 20px; position: relative; }
+.field-label {
+    display: block;
+    font-size: 0.78rem; font-weight: 700;
+    color: #374151;
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+}
+.field-input-wrap {
+    position: relative;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    display: flex; align-items: center;
+    padding: 0 16px;
+    transition: all 0.25s;
+    overflow: hidden;
+}
+.field-input-wrap::before {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+.field-input-wrap:focus-within {
+    border-color: #16a34a;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(22,163,74,0.1);
+}
+.field-input-wrap:focus-within::before { opacity: 1; }
+.f-ico {
+    color: #9ca3af;
+    font-size: 0.95rem;
+    margin-right: 12px;
+    position: relative; z-index: 1;
+    min-width: 16px; text-align: center;
+    transition: color 0.25s;
+}
+.field-input-wrap:focus-within .f-ico { color: #16a34a; }
+.f-input {
+    flex: 1; border: none; background: transparent;
+    padding: 14px 0;
+    font-size: 0.95rem; color: #0f172a;
+    font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif;
+    font-weight: 500;
+    outline: none;
+    position: relative; z-index: 1;
+}
+.f-input::placeholder { color: #9ca3af; font-weight: 400; }
+.pw-toggle {
+    cursor: pointer; color: #9ca3af; padding: 6px;
+    transition: color 0.2s; position: relative; z-index: 1;
+    background: none; border: none; font-size: 0.9rem;
+}
+.pw-toggle:hover { color: #16a34a; }
+
+/* Row: remember + forgot */
+.form-row-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px;
+}
+.check-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.83rem; color: #6b7280; font-weight: 500; cursor: pointer;
+}
+.check-label input { accent-color: #16a34a; width: 15px; height: 15px; cursor: pointer; }
+.forgot-link {
+    font-size: 0.83rem; font-weight: 600;
+    color: #16a34a; text-decoration: none;
+    transition: color 0.2s;
+}
+.forgot-link:hover { color: #15803d; text-decoration: underline; }
+
+/* Submit button */
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
+    color: white;
+    border: none; border-radius: 14px;
+    padding: 15px;
+    font-size: 1rem; font-weight: 700;
+    letter-spacing: 0.2px;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 25px rgba(22,163,74,0.35), 0 2px 8px rgba(0,0,0,0.1);
+    position: relative; overflow: hidden;
+}
+.btn-submit::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0; transition: opacity 0.3s;
+}
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 35px rgba(22,163,74,0.45), 0 4px 12px rgba(0,0,0,0.12);
+}
+.btn-submit:hover::after { opacity: 1; }
+.btn-submit:active { transform: translateY(0); }
+
+/* Divider */
+.or-divider {
+    display: flex; align-items: center; gap: 14px;
+    color: #9ca3af; font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin: 24px 0;
+}
+.or-divider::before, .or-divider::after {
+    content: ''; flex: 1; height: 1px; background: #f3f4f6;
+}
+
+/* Social buttons */
+.social-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+.btn-social {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 12px; padding: 12px 8px;
+    font-size: 0.85rem; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    transition: all 0.2s; border: 1.5px solid;
+    font-family: 'Outfit', sans-serif;
+}
+.btn-google { background: #fff; color: #374151; border-color: #e5e7eb; }
+.btn-google:hover { border-color: #d1d5db; background: #f9fafb; color: #111; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.btn-facebook { background: #1877f2; color: #fff; border-color: #1877f2; }
+.btn-facebook:hover { background: #166fe5; color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(24,119,242,0.3); }
+
+/* Sign up footer */
+.signup-footer {
+    text-align: center;
+    font-size: 0.87rem; color: #6b7280; font-weight: 500;
+}
+.signup-footer a {
+    color: #16a34a; font-weight: 700; text-decoration: none;
+    transition: color 0.2s;
+}
+.signup-footer a:hover { color: #15803d; text-decoration: underline; }
+
+/* Error */
+.form-error {
+    background: #fef2f2; border-left: 3px solid #ef4444;
+    border-radius: 10px; padding: 12px 16px;
+    font-size: 0.84rem; color: #991b1b;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 900px) {
+    .lp-wrap { flex-direction: column; }
+    .lp-hero { min-height: 45vh; flex: 0 0 45vh; }
+    .hero-content { padding: 28px 28px 36px; }
+    .hero-top { top: 20px; left: 28px; right: 28px; }
+    .hero-headline { font-size: 2rem; letter-spacing: -0.5px; }
+    .hero-chips { display: none; }
+    .hero-testimonial { display: none; }
+    .lp-form { flex: 1; width: 100%; padding: 36px 28px 40px; box-shadow: none; }
+    .form-topbar { margin-bottom: 28px; }
+    .form-title { font-size: 1.6rem; }
+    .social-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lp-wrap">
+
+    <!-- ══════════════════════════════
+         LEFT — HERO PANEL
+    ══════════════════════════════ -->
+    <div class="lp-hero">
+
+        <!-- Background Slideshow -->
+        <div class="hero-slides" id="heroSlides">
+            <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&q=90&auto=format&fit=crop');"></div>
+            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1560493676-04071c5f467b?w=1600&q=90&auto=format&fit=crop');"></div>
+            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1600&q=90&auto=format&fit=crop');"></div>
+            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1600&q=90&auto=format&fit=crop');"></div>
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-grid"></div>
+
+        <!-- Top Brand -->
+        <div class="hero-top">
+            <div class="hero-brand">
+                <div class="hero-brand-icon">🌿</div>
+                <div>
+                    <div class="hero-brand-name">Kisaan Mandi</div>
+                    <div class="hero-brand-sub">किसान मंडी · किसान मण्डी</div>
+                </div>
+            </div>
+            <div class="hero-slide-dots" id="heroDots"></div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="hero-content">
+            <div class="hero-chips">
+                <div class="chip"><span class="chip-dot"></span>{% if selected_lang == 'hi' %}किसान सशक्तिकरण{% elif selected_lang == 'ne' %}किसान सशक्तीकरण{% else %}Farmer Empowerment{% endif %}</div>
+                <div class="chip"><span class="chip-dot"></span>{% if selected_lang == 'hi' %}उचित मूल्य{% elif selected_lang == 'ne' %}उचित मूल्य{% else %}Fair Prices{% endif %}</div>
+                <div class="chip"><span class="chip-dot"></span>{% if selected_lang == 'hi' %}डिजिटल मंडी{% elif selected_lang == 'ne' %}डिजिटल बजार{% else %}Digital Marketplace{% endif %}</div>
+            </div>
+
+            <div class="hero-headline">
+                {% if selected_lang == 'hi' %}
+                    <span class="hl-green">खेत से</span><br>
+                    <span class="hl-white">सीधे आपके</span><br>
+                    <span class="hl-white">दरवाज़े तक</span>
+                {% elif selected_lang == 'ne' %}
+                    <span class="hl-green">खेतबाट</span><br>
+                    <span class="hl-white">सिधै तपाईंको</span><br>
+                    <span class="hl-white">ढोकासम्म</span>
+                {% else %}
+                    <span class="hl-green">Fresh From</span><br>
+                    <span class="hl-white">The Farm,</span><br>
+                    <span class="hl-white">To Your Door</span>
+                {% endif %}
+            </div>
+
+            <p class="hero-desc">
+                {% if selected_lang == 'hi' %}किसानों को सीधे खरीदारों से जोड़ता है। बेहतर मूल्य, पारदर्शी व्यापार और शून्य बिचौलिए।
+                {% elif selected_lang == 'ne' %}किसानहरूलाई सिधै खरिदकर्तासँग जोड्छ। राम्रो मूल्य, पारदर्शी व्यापार र शून्य बिचौलिया।
+                {% else %}Connecting farmers directly with buyers for fair prices, transparent trade, and zero middlemen — in 3 languages.
+                {% endif %}
+            </p>
+
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-num">5K+</div>
+                    <div class="stat-lbl">{% if selected_lang == 'hi' %}किसान{% elif selected_lang == 'ne' %}किसान{% else %}Farmers{% endif %}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">12K+</div>
+                    <div class="stat-lbl">{% if selected_lang == 'hi' %}ऑर्डर{% elif selected_lang == 'ne' %}अर्डर{% else %}Orders{% endif %}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">₹2Cr+</div>
+                    <div class="stat-lbl">{% if selected_lang == 'hi' %}व्यापार{% elif selected_lang == 'ne' %}व्यापार{% else %}Revenue{% endif %}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">3</div>
+                    <div class="stat-lbl">{% if selected_lang == 'hi' %}भाषाएं{% elif selected_lang == 'ne' %}भाषाहरू{% else %}Languages{% endif %}</div>
+                </div>
+            </div>
+
+            <div class="hero-testimonial">
+                <div class="t-avatars">
+                    <div class="t-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706);">R</div>
+                    <div class="t-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">S</div>
+                    <div class="t-avatar" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">P</div>
+                    <div class="t-avatar" style="background:linear-gradient(135deg,#22c55e,#16a34a);">M</div>
+                </div>
+                <div class="t-text">
+                    <strong>{% if selected_lang == 'hi' %}500+ किसान{% elif selected_lang == 'ne' %}500+ किसान{% else %}500+ farmers{% endif %}</strong>
+                    {% if selected_lang == 'hi' %} ने इस महीने जुड़े{% elif selected_lang == 'ne' %} यो महिना जोडिए{% else %} joined this month{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         RIGHT — FORM PANEL
+    ══════════════════════════════ -->
+    <div class="lp-form">
+        <div class="form-deco deco-1"></div>
+        <div class="form-deco deco-2"></div>
+
+        <!-- Top bar: back + language -->
+        <div class="form-topbar" style="justify-content: flex-end;">
+            <div class="lang-pill">
+                <span class="lang-icon">🌐</span>
+                <select class="lang-sel" onchange="changeLang(this)">
+                    <option value="en" {% if selected_lang == 'en' %}selected{% endif %}>EN — English</option>
+                    <option value="hi" {% if selected_lang == 'hi' %}selected{% endif %}>हि — हिन्दी</option>
+                    <option value="ne" {% if selected_lang == 'ne' %}selected{% endif %}>ने — नेपाली</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Heading -->
+        <div class="form-heading">
+            <div class="form-eyebrow">
+                <i class="fas fa-leaf"></i>
+                {% if selected_lang == 'hi' %}सुरक्षित लॉगिन{% elif selected_lang == 'ne' %}सुरक्षित लगइन{% else %}Secure Login{% endif %}
+            </div>
+            <h1 class="form-title">
+                {% if selected_lang == 'hi' %}वापस आएं 👋{% elif selected_lang == 'ne' %}फिर्ता स्वागत 👋{% else %}Welcome Back 👋{% endif %}
+            </h1>
+            <p class="form-sub">
+                {% if selected_lang == 'hi' %}अपने किसान मंडी खाते में लॉगिन करें
+                {% elif selected_lang == 'ne' %}आफ्नो किसान मण्डी खातामा लगइन गर्नुहोस्
+                {% else %}Sign in to continue to Kisaan Mandi
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Error Messages -->
+        {% if form.non_field_errors %}
+        <div class="form-error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Login Form -->
+        <form method="post" id="loginForm">
+            {% csrf_token %}
+
+            <div class="field-group">
+                <label class="field-label">
+                    {% if selected_lang == 'hi' %}यूजरनाम{% elif selected_lang == 'ne' %}प्रयोगकर्ता नाम{% else %}Username{% endif %}
+                </label>
+                <div class="field-input-wrap">
+                    <i class="fas fa-user f-ico"></i>
+                    <input type="text" name="username" class="f-input"
+                        placeholder="{% if selected_lang == 'hi' %}अपना यूजरनाम दर्ज करें{% elif selected_lang == 'ne' %}आफ्नो प्रयोगकर्ता नाम{% else %}Enter your username{% endif %}"
+                        autofocus required>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">
+                    {% if selected_lang == 'hi' %}पासवर्ड{% elif selected_lang == 'ne' %}पासवर्ड{% else %}Password{% endif %}
+                </label>
+                <div class="field-input-wrap">
+                    <i class="fas fa-lock f-ico"></i>
+                    <input type="password" name="password" id="loginPw" class="f-input"
+                        placeholder="{% if selected_lang == 'hi' %}अपना पासवर्ड दर्ज करें{% elif selected_lang == 'ne' %}आफ्नो पासवर्ड{% else %}Enter your password{% endif %}"
+                        required>
+                    <button type="button" class="pw-toggle" onclick="togglePw('loginPw',this)">
+                        <i class="fas fa-eye-slash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-row-meta">
+                <label class="check-label">
+                    <input type="checkbox" name="keep_signed_in" checked>
+                    {% if selected_lang == 'hi' %}लॉगिन रहें{% elif selected_lang == 'ne' %}लगइन रहनुस्{% else %}Keep me signed in{% endif %}
+                </label>
+                <a href="#" class="forgot-link">
+                    {% if selected_lang == 'hi' %}पासवर्ड भूले?{% elif selected_lang == 'ne' %}पासवर्ड बिर्सनुभयो?{% else %}Forgot password?{% endif %}
+                </a>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>
+                {% if selected_lang == 'hi' %}लॉगिन करें{% elif selected_lang == 'ne' %}लगइन गर्नुस्{% else %}Sign In to Kisaan Mandi{% endif %}
+            </button>
+        </form>
+
+        <div class="or-divider">{% if selected_lang == 'hi' %}या इससे{% elif selected_lang == 'ne' %}अथवा{% else %}or continue with{% endif %}</div>
+
+        <div class="social-row">
+            <a href="{% url 'social_login' 'google' %}" class="btn-social btn-google">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="G" style="width:17px;">
+                Google
+            </a>
+            <a href="{% url 'social_login' 'facebook' %}" class="btn-social btn-facebook">
+                <i class="fab fa-facebook-f"></i> Facebook
+            </a>
+        </div>
+
+        <div class="signup-footer">
+            {% if selected_lang == 'hi' %}खाता नहीं है?{% elif selected_lang == 'ne' %}खाता छैन?{% else %}Don't have an account?{% endif %}
+            &nbsp;<a href="{% url 'register' %}">{% if selected_lang == 'hi' %}अभी बनाएं →{% elif selected_lang == 'ne' %}अभी दर्ता गर्नुस् →{% else %}Create Free Account →{% endif %}</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeLang(sel) {
+    var lang = sel.value;
+    var next = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = '/set-language/?lang=' + lang + '&next=' + next;
+}
+
+function togglePw(id, btn) {
+    var f = document.getElementById(id);
+    var ico = btn.querySelector('i');
+    if (f.type === 'password') {
+        f.type = 'text';
+        ico.className = 'fas fa-eye';
+    } else {
+        f.type = 'password';
+        ico.className = 'fas fa-eye-slash';
+    }
+}
+
+// Background slideshow
+(function() {
+    var slides = document.querySelectorAll('.hero-slide');
+    var dotsWrap = document.getElementById('heroDots');
+    var cur = 0;
+
+    slides.forEach(function(_, i) {
+        var d = document.createElement('button');
+        d.className = 'h-dot' + (i === 0 ? ' active' : '');
+        d.onclick = function() { go(i); };
+        dotsWrap.appendChild(d);
+    });
+
+    function go(n) {
+        slides[cur].classList.remove('active');
+        dotsWrap.children[cur].classList.remove('active');
+        cur = (n + slides.length) % slides.length;
+        slides[cur].classList.add('active');
+        dotsWrap.children[cur].classList.add('active');
+    }
+
+    setInterval(function() { go(cur + 1); }, 5500);
+})();
+</script>
+{% endblock %}

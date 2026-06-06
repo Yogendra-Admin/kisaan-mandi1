@@ -1,0 +1,64 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}{{ title }} - Kisaan Mandi{% endblock %}
+{% block content %}
+<div class="container py-4">
+<div class="row justify-content-center">
+<div class="col-lg-9">
+<div class="card border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:25px;color:white;">
+        <h4 class="fw-bold mb-0">{{ title }}</h4>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold">Product Name / उत्पाद का नाम / उत्पादनको नाम *</label>
+                    {{ form.name.errors }}{{ form.name }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Category / श्रेणी *</label>
+                    {{ form.category.errors }}{{ form.category }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Price per Unit / मूल्य / मूल्य *</label>
+                    <div class="input-group"><span class="input-group-text">₹</span>{{ form.price_per_unit }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Unit / इकाई *</label>{{ form.unit }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Quantity Available / मात्रा *</label>{{ form.quantity_available }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Location / स्थान / ठाउँ</label>{{ form.location }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">State/Province / राज्य / प्रदेश</label>{{ form.state }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Description / विवरण / विवरण</label>{{ form.description }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Product Image / तस्वीर / फोटो</label>{{ form.image }}
+                </div>
+                <div class="col-md-6 d-flex align-items-end pb-2">
+                    <div class="form-check">
+                        {{ form.is_organic }}
+                        <label class="form-check-label fw-semibold">🍃 Organic / जैविक / जैविक</label>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-kisaan px-4">
+                    <i class="fas fa-save me-2"></i>Save / सहेजें / सेभ गर्नुस्
+                </button>
+                <a href="{% url 'my_products' %}" class="btn btn-outline-secondary px-4">Cancel / रद्द / रद्द गर्नुस्</a>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

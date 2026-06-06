@@ -1,0 +1,452 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}
+    {% if selected_lang == 'hi' %}ऑर्डर #{{ order.id }}
+    {% elif selected_lang == 'ne' %}अर्डर #{{ order.id }}
+    {% else %}Order #{{ order.id }}
+    {% endif %} - Kisaan Mandi
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-paid {
+        background: #e8f5e9;
+        color: #1b5e20;
+    }
+    .status-failed {
+        background: #ffebee;
+        color: #c62828;
+    }
+    /* Premium timeline styles */
+    .premium-timeline {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem 0;
+        padding: 0 1rem;
+    }
+    .timeline-line {
+        position: absolute;
+        top: 25px;
+        left: 5%;
+        right: 5%;
+        height: 4px;
+        background: #e0e0e0;
+        z-index: 1;
+        border-radius: 2px;
+    }
+    .timeline-line-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: linear-gradient(90deg, var(--green-light, #81c784), var(--green-mid, #2d8a3e));
+        border-radius: 2px;
+        transition: width 0.5s ease-in-out;
+    }
+    .timeline-step {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 90px;
+    }
+    .timeline-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 3px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #9e9e9e;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    .timeline-step.completed .timeline-icon {
+        background: var(--green-light, #81c784);
+        border-color: var(--green-mid, #2d8a3e);
+        color: white;
+        box-shadow: 0 4px 12px rgba(45, 138, 62, 0.2);
+    }
+    .timeline-step.active .timeline-icon {
+        background: var(--green-mid, #2d8a3e);
+        border-color: var(--green-dark, #1b5e20);
+        color: white;
+        box-shadow: 0 0 0 4px rgba(45, 138, 62, 0.15), 0 4px 15px rgba(45, 138, 62, 0.3);
+        animation: timelinePulse 2s infinite;
+    }
+    .timeline-step.cancelled .timeline-icon {
+        background: #ffebee;
+        border-color: var(--nepali-red, #c62828);
+        color: var(--nepali-red, #c62828);
+        box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+    }
+    @keyframes timelinePulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(45, 138, 62, 0.4), 0 4px 15px rgba(45, 138, 62, 0.3);
+        }
+        70% {
+            box-shadow: 0 0 0 8px rgba(45, 138, 62, 0), 0 4px 15px rgba(45, 138, 62, 0.3);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(45, 138, 62, 0), 0 4px 15px rgba(45, 138, 62, 0.3);
+        }
+    }
+    .timeline-label {
+        margin-top: 10px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #757575;
+        text-align: center;
+        transition: color 0.3s ease;
+        line-height: 1.2;
+    }
+    .timeline-step.active .timeline-label {
+        color: var(--green-dark, #1b5e20);
+        font-weight: 700;
+    }
+    .timeline-step.completed .timeline-label {
+        color: var(--green-mid, #2d8a3e);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:25px;color:white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="fw-bold mb-1">
+                                {% if selected_lang == 'hi' %}ऑर्डर #{{ order.id }}
+                                {% elif selected_lang == 'ne' %}अर्डर #{{ order.id }}
+                                {% else %}Order #{{ order.id }}
+                                {% endif %}
+                            </h4>
+                            <p class="mb-0 opacity-75">{{ order.created_at|date:"d M Y, h:i A" }}</p>
+                        </div>
+                        <span class="badge status-{{ order.status }} rounded-pill px-4 py-2 fs-6">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-muted mb-3">
+                                {% if selected_lang == 'hi' %}उत्पाद
+                                {% elif selected_lang == 'ne' %}उत्पादन
+                                {% else %}PRODUCT
+                                {% endif %}
+                            </h6>
+                            <p class="fw-bold fs-5 mb-0">
+                                {% if selected_lang == 'hi' and order.product.name_hi %}{{ order.product.name_hi }}
+                                {% elif selected_lang == 'ne' and order.product.name_ne %}{{ order.product.name_ne }}
+                                {% else %}{{ order.product.name }}
+                                {% endif %}
+                            </p>
+                            
+                            <table class="table table-borderless table-sm mt-2">
+                                <tr>
+                                    <td class="text-muted ps-0">
+                                        {% if selected_lang == 'hi' %}मात्रा:
+                                        {% elif selected_lang == 'ne' %}मात्रा:
+                                        {% else %}Quantity:
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ order.quantity }} {{ order.product.unit }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted ps-0">
+                                        {% if selected_lang == 'hi' %}दर:
+                                        {% elif selected_lang == 'ne' %}दर:
+                                        {% else %}Rate:
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>₹{{ order.product.price_per_unit }}/{{ order.product.unit }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted ps-0">
+                                        {% if selected_lang == 'hi' %}कुल:
+                                        {% elif selected_lang == 'ne' %}जम्मा:
+                                        {% else %}Total:
+                                        {% endif %}
+                                    </td>
+                                    <td><strong class="price-tag">₹{{ order.total_price }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted ps-0">
+                                        {% if selected_lang == 'hi' %}भुगतान:
+                                        {% elif selected_lang == 'ne' %}भुक्तानी:
+                                        {% else %}Payment:
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ order.get_payment_method_display }}</strong>
+                                        {% if order.payment_method != 'cod' %}
+                                        <span class="badge status-{{ order.payment_status }} rounded-pill ms-1">
+                                            {{ order.get_payment_status_display }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-muted mb-3">
+                                {% if user.is_farmer %}
+                                    {% if selected_lang == 'hi' %}खरीदार
+                                    {% elif selected_lang == 'ne' %}खरिदकर्ता
+                                    {% else %}BUYER
+                                    {% endif %}
+                                {% else %}
+                                    {% if selected_lang == 'hi' %}किसान
+                                    {% elif selected_lang == 'ne' %}किसान
+                                    {% else %}FARMER
+                                    {% endif %}
+                                {% endif %}
+                            </h6>
+                            {% if user.is_farmer %}
+                            <p class="fw-semibold mb-1">{{ order.buyer.get_full_name|default:order.buyer.username }}</p>
+                            <p class="text-muted small mb-1">📞 {{ order.buyer.phone|default:'N/A' }}</p>
+                            <p class="text-muted small mb-1">✉️ {{ order.buyer.email }}</p>
+                            {% if order.buyer.state %}<p class="text-muted small mb-1">📍 {{ order.buyer.district }}, {{ order.buyer.state }}</p>{% endif %}
+                            {% else %}
+                            <p class="fw-semibold mb-1">{{ order.product.farmer.get_full_name|default:order.product.farmer.username }}</p>
+                            <p class="text-muted small mb-1">📞 {{ order.product.farmer.phone|default:'N/A' }}</p>
+                            {% if order.product.farmer.state %}<p class="text-muted small mb-1">📍 {{ order.product.farmer.district }}, {{ order.product.farmer.state }}</p>{% endif %}
+                            {% endif %}
+
+                            <h6 class="fw-bold text-muted mt-3 mb-2">
+                                {% if selected_lang == 'hi' %}डिलिवरी पता
+                                {% elif selected_lang == 'ne' %}डेलिभरी ठेगाना
+                                {% else %}DELIVERY ADDRESS
+                                {% endif %}
+                            </h6>
+                            <p class="text-muted">{{ order.delivery_address }}</p>
+                            {% if order.notes %}
+                            <h6 class="fw-bold text-muted mb-1">
+                                {% if selected_lang == 'hi' %}टिप्पणी
+                                {% elif selected_lang == 'ne' %}टिप्पणी
+                                {% else %}NOTES
+                                {% endif %}
+                            </h6>
+                            <p class="text-muted">{{ order.notes }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Order Status Timeline -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold text-muted mb-3">
+                            {% if selected_lang == 'hi' %}ऑर्डर समयरेखा
+                            {% elif selected_lang == 'ne' %}अर्डर समयरेखा
+                            {% else %}ORDER TIMELINE
+                            {% endif %}
+                        </h6>
+                        {% if order.status == 'cancelled' %}
+                        <div class="premium-timeline">
+                            <div class="timeline-line">
+                                <div class="timeline-line-progress bg-danger" style="width: 100%;"></div>
+                            </div>
+                            <div class="timeline-step completed">
+                                <div class="timeline-icon">⏳</div>
+                                <div class="timeline-label">
+                                    {% if selected_lang == 'hi' %}प्रतीक्षारत
+                                    {% elif selected_lang == 'ne' %}प्रतीक्षारत
+                                    {% else %}Pending
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="timeline-step cancelled">
+                                <div class="timeline-icon">❌</div>
+                                <div class="timeline-label text-danger">
+                                    {% if selected_lang == 'hi' %}रद्द किया गया
+                                    {% elif selected_lang == 'ne' %}रद्द गरियो
+                                    {% else %}Cancelled
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="premium-timeline">
+                            <div class="timeline-line">
+                                {% if order.status == 'pending' %}
+                                <div class="timeline-line-progress" style="width: 0%;"></div>
+                                {% elif order.status == 'confirmed' %}
+                                <div class="timeline-line-progress" style="width: 33%;"></div>
+                                {% elif order.status == 'dispatched' %}
+                                <div class="timeline-line-progress" style="width: 66%;"></div>
+                                {% elif order.status == 'delivered' %}
+                                <div class="timeline-line-progress" style="width: 100%;"></div>
+                                {% else %}
+                                <div class="timeline-line-progress" style="width: 0%;"></div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Step 1: Pending -->
+                            <div class="timeline-step {% if order.status == 'pending' %}active{% else %}completed{% endif %}">
+                                <div class="timeline-icon">⏳</div>
+                                <div class="timeline-label">
+                                    {% if selected_lang == 'hi' %}प्रतीक्षारत
+                                    {% elif selected_lang == 'ne' %}प्रतीक्षारत
+                                    {% else %}Pending
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Confirmed -->
+                            <div class="timeline-step {% if order.status == 'confirmed' %}active{% elif order.status == 'dispatched' or order.status == 'delivered' %}completed{% endif %}">
+                                <div class="timeline-icon">{% if order.status == 'dispatched' or order.status == 'delivered' %}✓{% else %}✅{% endif %}</div>
+                                <div class="timeline-label">
+                                    {% if selected_lang == 'hi' %}पुष्टि की गई
+                                    {% elif selected_lang == 'ne' %}पुष्टि गरियो
+                                    {% else %}Confirmed
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Dispatched -->
+                            <div class="timeline-step {% if order.status == 'dispatched' %}active{% elif order.status == 'delivered' %}completed{% endif %}">
+                                <div class="timeline-icon">{% if order.status == 'delivered' %}✓{% else %}🚚{% endif %}</div>
+                                <div class="timeline-label">
+                                    {% if selected_lang == 'hi' %}भेजा गया
+                                    {% elif selected_lang == 'ne' %}पठाइयो
+                                    {% else %}Dispatched
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Delivered -->
+                            <div class="timeline-step {% if order.status == 'delivered' %}active completed{% endif %}">
+                                <div class="timeline-icon">🎉</div>
+                                <div class="timeline-label">
+                                    {% if selected_lang == 'hi' %}वितरित
+                                    {% elif selected_lang == 'ne' %}वितरण भयो
+                                    {% else %}Delivered
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if not user.is_farmer and order.payment_method != 'cod' and order.payment_status != 'paid' and order.status != 'cancelled' %}
+                    <div class="alert alert-warning border-0 rounded-4 d-flex justify-content-between align-items-center mt-4 p-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="font-size: 2rem;">💳</div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark">
+                                    {% if selected_lang == 'hi' %}भुगतान लंबित है
+                                    {% elif selected_lang == 'ne' %}भुक्तानी बाँकी छ
+                                    {% else %}Payment Pending
+                                    {% endif %}
+                                </h6>
+                                <p class="mb-0 small text-muted">
+                                    {% if selected_lang == 'hi' %}कृपया इस ऑर्डर की पुष्टि करने के लिए ऑनलाइन भुगतान पूरा करें।
+                                    {% elif selected_lang == 'ne' %}कृपया यो अर्डर पुष्टि गर्नको लागि अनलाइन भुक्तानी पूरा गर्नुहोस्।
+                                    {% else %}Please complete your payment online to confirm this order.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{% url 'payment_checkout' order.id %}" class="btn btn-orange btn-sm rounded-pill px-4 py-2 fw-bold">
+                            <i class="fas fa-credit-card me-2"></i>
+                            {% if selected_lang == 'hi' %}भुगतान करें
+                            {% elif selected_lang == 'ne' %}भुक्तानी गर्नुस्
+                            {% else %}Pay Now
+                            {% endif %}
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if user.is_farmer and order.status != 'delivered' and order.status != 'cancelled' %}
+                    <hr class="mt-4">
+                    <h6 class="fw-bold mb-3">
+                        {% if selected_lang == 'hi' %}स्थिति अपडेट करें
+                        {% elif selected_lang == 'ne' %}स्थिति अपडेट गर्नुस्
+                        {% else %}Update Status
+                        {% endif %}
+                    </h6>
+                    <form method="post" action="{% url 'update_order_status' order.pk %}" class="d-flex gap-2 flex-wrap">
+                        {% csrf_token %}
+                        <select name="status" class="form-select w-auto">
+                            <option value="confirmed">
+                                {% if selected_lang == 'hi' %}✅ पुष्टि करें
+                                {% elif selected_lang == 'ne' %}✅ पुष्टि गर्नुस्
+                                {% else %}✅ Confirmed
+                                {% endif %}
+                            </option>
+                            <option value="dispatched">
+                                {% if selected_lang == 'hi' %}🚚 भेजा गया
+                                {% elif selected_lang == 'ne' %}🚚 पठाइयो
+                                {% else %}🚚 Dispatched
+                                {% endif %}
+                            </option>
+                            <option value="cancelled">
+                                {% if selected_lang == 'hi' %}❌ रद्द करें
+                                {% elif selected_lang == 'ne' %}❌ रद्द गर्नुस्
+                                {% else %}❌ Cancelled
+                                {% endif %}
+                            </option>
+                        </select>
+                        <button type="submit" class="btn btn-kisaan">
+                            {% if selected_lang == 'hi' %}अपडेट करें
+                            {% elif selected_lang == 'ne' %}अपडेट गर्नुस्
+                            {% else %}Update
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if not user.is_farmer %}
+                        {% if order.status == 'pending' or order.status == 'confirmed' %}
+                        <hr class="mt-4">
+                        <h6 class="fw-bold mb-3 text-danger">
+                            {% if selected_lang == 'hi' %}ऑर्डर रद्द करें{% elif selected_lang == 'ne' %}अर्डर रद्द गर्नुहोस्{% else %}Cancel Order{% endif %}
+                        </h6>
+                        <span id="confirmCancelMsg" style="display:none;">{% if selected_lang == 'hi' %}क्या आप वाकई इस ऑर्डर को रद्द करना चाहते हैं?{% elif selected_lang == 'ne' %}के तपाईं साँच्चै यो अर्डर रद्द गर्न चाहनुहुन्छ?{% else %}Are you sure you want to cancel this order?{% endif %}</span>
+                        <form method="post" action="{% url 'update_order_status' order.pk %}" onsubmit="return confirm(document.getElementById('confirmCancelMsg').innerText.trim());">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="cancelled">
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4 py-2 fw-bold">
+                                <i class="fas fa-times me-2"></i>
+                                {% if selected_lang == 'hi' %}ऑर्डर रद्द करें{% elif selected_lang == 'ne' %}अर्डर रद्द गर्नुहोस्{% else %}Cancel Order{% endif %}
+                            </button>
+                        </form>
+                        {% elif order.status == 'dispatched' %}
+                        <hr class="mt-4">
+                        <h6 class="fw-bold mb-3 text-success">
+                            {% if selected_lang == 'hi' %}वितरण की पुष्टि करें{% elif selected_lang == 'ne' %}डेलिभरी पुष्टि गर्नुहोस्{% else %}Confirm Delivery{% endif %}
+                        </h6>
+                        <form method="post" action="{% url 'update_order_status' order.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="delivered">
+                            <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" style="background-color: var(--green-mid); border-color: var(--green-dark);">
+                                <i class="fas fa-check-circle me-2"></i>
+                                {% if selected_lang == 'hi' %}वितरण की पुष्टि करें{% elif selected_lang == 'ne' %}डेलिभरी पुष्टि गर्नुहोस्{% else %}Confirm Delivery{% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'my_orders' %}" class="btn btn-outline-secondary">
+                    ← 
+                    {% if selected_lang == 'hi' %}वापस
+                    {% elif selected_lang == 'ne' %}फिर्ता
+                    {% else %}Back
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

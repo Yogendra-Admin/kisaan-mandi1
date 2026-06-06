@@ -1,0 +1,658 @@
+{% extends 'base.html' %}
+{% block title %}
+    {% if selected_lang == 'hi' %}भुगतान चेकआउट
+    {% elif selected_lang == 'ne' %}भुक्तानी चेकआउट
+    {% else %}Payment Checkout
+    {% endif %} - Kisaan Mandi
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium mock checkout styles */
+    .mock-checkout-container {
+        max-width: 550px;
+        margin: 2rem auto;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    .mock-checkout-header {
+        background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+        color: white;
+        padding: 24px;
+        text-align: center;
+        position: relative;
+    }
+    .mock-checkout-header .brand {
+        font-weight: 700;
+        font-size: 1.25rem;
+        letter-spacing: 0.5px;
+    }
+    .mock-checkout-header .amount {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-top: 10px;
+    }
+    .mock-checkout-body {
+        padding: 30px;
+        background: #fbfbfb;
+    }
+    .payment-tab-nav {
+        display: flex;
+        border-bottom: 2px solid #eaeaea;
+        margin-bottom: 25px;
+    }
+    .payment-tab-btn {
+        flex: 1;
+        padding: 12px;
+        background: none;
+        border: none;
+        font-weight: 600;
+        color: #777;
+        text-align: center;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s;
+    }
+    .payment-tab-btn.active {
+        color: var(--green-mid);
+        border-bottom-color: var(--green-mid);
+    }
+    .payment-tab-btn:hover:not(.active) {
+        color: #333;
+        border-bottom-color: #ddd;
+    }
+    .payment-tab-content {
+        display: none;
+        min-height: 200px;
+    }
+    .payment-tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .bank-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    .bank-logo-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 15px 10px;
+        border: 1px solid #eaeaea;
+        border-radius: 12px;
+        background: #fff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #555;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .bank-logo-btn:hover {
+        border-color: var(--green-mid);
+        background: #f1f8f3;
+        color: var(--green-mid);
+        transform: translateY(-2px);
+    }
+    .bank-icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        color: var(--green-mid);
+    }
+    .qr-container {
+        text-align: center;
+        background: #fff;
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px dashed #ccc;
+    }
+    .upi-qr {
+        width: 150px;
+        height: 150px;
+        margin: 10px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eee;
+        position: relative;
+        border-radius: 8px;
+    }
+    .upi-qr::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 3px;
+        background: var(--green-light);
+        top: 0;
+        animation: qrScan 2s infinite linear;
+        box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+    }
+    @keyframes qrScan {
+        0% { top: 0; }
+        50% { top: 100%; }
+        100% { top: 0; }
+    }
+    .sim-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    .btn-sim-success {
+        flex: 1;
+        background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
+        color: white;
+        font-weight: 600;
+        padding: 14px;
+        border-radius: 30px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(45, 138, 62, 0.3);
+        transition: all 0.2s;
+    }
+    .btn-sim-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(45, 138, 62, 0.4);
+    }
+    .btn-sim-fail {
+        background: #f5f5f5;
+        color: #666;
+        font-weight: 600;
+        padding: 14px 20px;
+        border-radius: 30px;
+        border: 1px solid #ddd;
+        transition: all 0.2s;
+    }
+    .btn-sim-fail:hover {
+        background: #fce4ec;
+        color: var(--nepali-red);
+        border-color: #ffcdd2;
+    }
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 20px;
+        color: #999;
+        font-size: 0.8rem;
+    }
+    .processing-overlay {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        z-index: 10;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    {% if order.payment_method == 'upi' %}
+    <!-- DIRECT UPI SCANNER PAGE -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div style="background: linear-gradient(135deg, var(--green-dark), var(--green-mid)); padding: 25px; color: white; text-align: center;">
+                    <h4 class="fw-bold mb-1">
+                        {% if selected_lang == 'hi' %}सीधा यूपीआई भुगतान
+                        {% elif selected_lang == 'ne' %}प्रत्यक्ष यूपीआई भुक्तानी
+                        {% else %}Direct UPI Payment
+                        {% endif %}
+                    </h4>
+                    <p class="mb-0 opacity-75">
+                        {% if selected_lang == 'hi' %}क्यूआर कोड को स्कैन करें और भुगतान करें
+                        {% elif selected_lang == 'ne' %}क्यूआर कोड स्क्यान गर्नुहोस् र भुक्तानी गर्नुहोस्
+                        {% else %}Scan the QR code to pay instantly
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-5 text-center">
+                            <div class="p-3 bg-light rounded-4 border d-inline-block shadow-sm">
+                                <div class="upi-qr" style="width: 180px; height: 180px; margin: 0 auto; display: flex; align-items: center; justify-content: center; background: #eee; position: relative; border-radius: 8px;">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi%3A%2F%2Fpay%3Fpa%3Dkisaanmandi%40paytm%26pn%3DKisaan%2520Mandi%26am%3D{{ total_price }}%26cu%3DINR" alt="UPI QR Code" style="width: 90%; height: 90%; object-fit: contain; background: white; border-radius: 4px; padding: 5px; z-index: 2;">
+                                </div>
+                                <h4 class="price-tag mt-3 mb-0">₹{{ total_price }}</h4>
+                                <span class="text-muted small">kisaanmandi@paytm</span>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <h5 class="fw-bold text-success mb-3">
+                                {% if selected_lang == 'hi' %}भुगतान के निर्देश:
+                                {% elif selected_lang == 'ne' %}भुक्तानी निर्देशनहरू:
+                                {% else %}Payment Instructions:
+                                {% endif %}
+                            </h5>
+                            <ol class="small text-muted mb-4 ps-3">
+                                <li>Open your UPI App (GPay, PhonePe, Paytm, BHIM, etc.).</li>
+                                <li>Scan the QR code or send payment to UPI ID: <strong>kisaanmandi@paytm</strong></li>
+                                <li>Pay the exact amount: <strong>₹{{ total_price }}</strong></li>
+                                <li>After payment, copy the 12-digit transaction Reference Number (UTR).</li>
+                            </ol>
+                            
+                            <form id="direct-upi-form" onsubmit="submitUtr(event)">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-dark">
+                                        {% if selected_lang == 'hi' %}12-अंकों का यूटीआर / लेनदेन आईडी दर्ज करें
+                                        {% elif selected_lang == 'ne' %}१२-अङ्कको यूटीआर / लेनदेन आईडी लेख्नुहोस्
+                                        {% else %}Enter 12-digit UTR / Ref Number *
+                                        {% endif %}
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg fw-bold text-center border-success" id="utrInput" placeholder="123456789012" pattern="\d{12}" required maxlength="12" style="letter-spacing: 2px;">
+                                    <div class="invalid-feedback d-none" id="utr-error" style="color: var(--nepali-red, #dc3545);">
+                                        Please enter exactly 12 numeric digits.
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-kisaan btn-lg w-100 py-3 rounded-3 fw-bold">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    {% if selected_lang == 'hi' %}भुगतान सत्यापित करें
+                                    {% elif selected_lang == 'ne' %}भुक्तानी प्रमाणित गर्नुहोस्
+                                    {% else %}Verify Payment
+                                    {% endif %}
+                                </button>
+                            </form>
+                            <div class="mt-3 text-center">
+                                <a href="{% url 'cart' %}" class="text-decoration-none text-muted small fw-bold">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    {% if selected_lang == 'hi' %}कार्ट में वापस जाएँ / भुगतान विधि बदलें
+                                    {% elif selected_lang == 'ne' %}कार्टमा फिर्ता जानुहोस् / भुक्तानी विधि परिवर्तन गर्नुहोस्
+                                    {% else %}Back to Cart / Change Payment Method
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form to POST the transaction ID -->
+    <form action="{% url 'payment_verify' order.id %}" method="POST" id="upi-payment-form">
+        {% csrf_token %}
+        <input type="hidden" name="utr_number" id="upi_utr_number">
+    </form>
+    
+    <script>
+        function submitUtr(e) {
+            e.preventDefault();
+            const input = document.getElementById('utrInput');
+            const error = document.getElementById('utr-error');
+            const utr = input.value.trim();
+            
+            if (/^\d{12}$/.test(utr)) {
+                error.classList.add('d-none');
+                document.getElementById('upi_utr_number').value = utr;
+                document.getElementById('upi-payment-form').submit();
+            } else {
+                error.classList.remove('d-none');
+                input.focus();
+            }
+        }
+    </script>
+    {% else %}
+    {% if not is_mock %}
+    <!-- REAL RAZORPAY REDIRECTING / LOADING SCREEN -->
+    <div class="row justify-content-center py-5">
+        <div class="col-md-6 text-center card border-0 shadow p-5 rounded-4">
+            <div class="spinner-border text-success mb-4" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="fw-bold mb-2">
+                {% if selected_lang == 'hi' %}सुरक्षित गेटवे पर भेजा जा रहा है...
+                {% elif selected_lang == 'ne' %}सुरक्षित गेटवेमा रिडिरेक्ट गर्दै...
+                {% else %}Redirecting to Secure Gateway...
+                {% endif %}
+            </h4>
+            <p class="text-muted">
+                {% if selected_lang == 'hi' %}कृपया रेज़रपे चेकआउट विंडो में भुगतान पूरा करें।
+                {% elif selected_lang == 'ne' %}कृपया रेजरपे चेकआउट विन्डोमा भुक्तानी पूरा गर्नुहोस्।
+                {% else %}Please complete the payment in the Razorpay checkout window.
+                {% endif %}
+            </p>
+            <button id="rzp-button" class="btn btn-kisaan px-5 py-2 mt-3">
+                <i class="fas fa-credit-card me-2"></i>
+                {% if selected_lang == 'hi' %}अभी भुगतान करें
+                {% elif selected_lang == 'ne' %}अहिले भुक्तानी गर्नुस्
+                {% else %}Pay Now
+                {% endif %} (₹{{ total_price }})
+            </button>
+            <div class="mt-3">
+                <a href="{% url 'cart' %}" class="text-decoration-none text-muted small fw-bold">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    {% if selected_lang == 'hi' %}कार्ट में वापस जाएँ / भुगतान विधि बदलें
+                    {% elif selected_lang == 'ne' %}कार्टमा फिर्ता जानुहोस् / भुक्तानी विधि परिवर्तन गर्नुहोस्
+                    {% else %}Back to Cart / Change Payment Method
+                    {% endif %}
+                </a>
+            </div>
+            <div class="secure-badge mt-4">
+                <i class="fas fa-lock text-success"></i> Secured by Razorpay Payment Gateway
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form to post payment details back for verification -->
+    <form action="{% url 'payment_verify' order.id %}" method="POST" id="razorpay-response-form">
+        {% csrf_token %}
+        <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+        <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+        <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+    </form>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        var options = {
+            "key": "{{ razorpay_key_id }}",
+            "amount": "{{ amount_paise }}",
+            "currency": "INR",
+            "name": "Kisaan Mandi",
+            "description": "Payment for Order #{{ order.id }}",
+            "image": "https://cdn-icons-png.flaticon.com/512/1865/1865269.png",
+            "order_id": "{{ razorpay_order_id }}",
+            "handler": function (response){
+                document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+                document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+                document.getElementById('razorpay_signature').value = response.razorpay_signature;
+                document.getElementById('razorpay-response-form').submit();
+            },
+            "prefill": {
+                "name": "{{ order.buyer.get_full_name|default:order.buyer.username|escapejs }}",
+                "email": "{{ order.buyer.email|escapejs }}",
+                "contact": "{{ order.buyer.phone|default:''|escapejs }}"
+            },
+            "theme": {
+                "color": "#2d8a3e"
+            },
+            "modal": {
+                "ondismiss": function(){
+                    window.location.href = "{% url 'payment_failed' order.id %}";
+                }
+            }
+        };
+
+        // Dynamically configure description and prefill method in standard JavaScript
+        var orderCount = parseInt("{{ orders.count|escapejs }}") || 1;
+        if (orderCount > 1) {
+            options.description = "Payment for " + orderCount + " Orders";
+        }
+
+        if ("{{ order.payment_method|escapejs }}" === "upi") {
+            options.prefill.method = "upi";
+        }
+
+        var rzp1 = new Razorpay(options);
+        
+        window.onload = function() {
+            rzp1.open();
+        };
+
+        document.getElementById('rzp-button').onclick = function(e){
+            rzp1.open();
+            e.preventDefault();
+        }
+    </script>
+
+    {% else %}
+    <!-- SIMULATED MOCK GATEWAY -->
+    <div class="mock-checkout-container position-relative">
+        <div class="processing-overlay" id="loadingOverlay">
+            <div class="spinner-grow text-success mb-3" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5 class="fw-bold mb-1" id="overlayTitle">
+                {% if selected_lang == 'hi' %}सुरक्षित लेनदेन की प्रक्रिया चल रही है...
+                {% elif selected_lang == 'ne' %}सुरक्षित कारोबारको प्रक्रिया भइरहेको छ...
+                {% else %}Processing Secure Transaction...
+                {% endif %}
+            </h5>
+            <p class="text-muted small">Please do not refresh or click back button.</p>
+        </div>
+
+        <div class="mock-checkout-header">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="brand">🌿 KISAAN MANDI</span>
+                <span class="badge bg-warning text-dark px-2 py-1 rounded">TEST GATEWAY</span>
+            </div>
+            <div class="small opacity-75">
+                {% if orders.count > 1 %}
+                    {% if selected_lang == 'hi' %}{{ orders.count }} ऑर्डर्स का भुगतान
+                    {% elif selected_lang == 'ne' %}{{ orders.count }} अर्डरहरूको भुक्तानी
+                    {% else %}Payment for {{ orders.count }} orders
+                    {% endif %}
+                {% else %}
+                    {% if selected_lang == 'hi' %}ऑर्डर #{{ order.id }} का भुगतान
+                    {% elif selected_lang == 'ne' %}अर्डर #{{ order.id }} को भुक्तानी
+                    {% else %}Order #{{ order.id }} Payment
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="amount">₹{{ total_price }}</div>
+        </div>
+
+        <div class="mock-checkout-body">
+            <div class="payment-tab-nav">
+                <button class="payment-tab-btn {% if order.payment_method == 'upi' or order.payment_method == 'cod' or not order.payment_method %}active{% endif %}" onclick="switchTab('tab-upi', this)">
+                    <i class="fas fa-mobile-alt me-1"></i> UPI
+                </button>
+                <button class="payment-tab-btn {% if order.payment_method == 'online' %}active{% endif %}" onclick="switchTab('tab-card', this)">
+                    <i class="fas fa-credit-card me-1"></i> 
+                    {% if selected_lang == 'hi' %}कार्ड
+                    {% elif selected_lang == 'ne' %}कार्ड
+                    {% else %}Card
+                    {% endif %}
+                </button>
+                <button class="payment-tab-btn" onclick="switchTab('tab-bank', this)">
+                    <i class="fas fa-university me-1"></i> 
+                    {% if selected_lang == 'hi' %}नेटबैंकिंग
+                    {% elif selected_lang == 'ne' %}नेटबैंकिङ
+                    {% else %}Netbanking
+                    {% endif %}
+                </button>
+            </div>
+
+            <!-- UPI TAB -->
+            <div class="payment-tab-content {% if order.payment_method == 'upi' or order.payment_method == 'cod' or not order.payment_method %}active{% endif %}" id="tab-upi">
+                <div class="qr-container">
+                    <p class="small text-muted mb-2">
+                        {% if selected_lang == 'hi' %}किसी भी UPI ऐप (जीपे, फोनपे, भीम, पेटीएम) से क्यूआर कोड स्कैन करें
+                        {% elif selected_lang == 'ne' %}कुनै पनि UPI एप (जीपे, फोनपे, भीम, पेटीएम) बाट क्यूआर कोड स्क्यान गर्नुहोस्
+                        {% else %}Scan QR code using any UPI App (GPay, PhonePe, Bhim, Paytm)
+                        {% endif %}
+                    </p>
+                    <div class="upi-qr">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3Dkisaanmandi%40paytm%26pn%3DKisaan%2520Mandi%26am%3D{{ total_price }}%26cu%3DINR" alt="UPI QR Code" style="width: 90%; height: 90%; object-fit: contain; background: white; border-radius: 4px; padding: 5px;">
+                    </div>
+                    <div class="mt-3 text-center">
+                        <span class="fw-bold text-success fs-5">kisaanmandi@paytm</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label small fw-semibold text-muted">
+                        {% if selected_lang == 'hi' %}या यूपीआई आईडी दर्ज करें
+                        {% elif selected_lang == 'ne' %}वा यूपीआई आईडी लेख्नुहोस्
+                        {% else %}Or Enter UPI ID / VPA
+                        {% endif %}
+                    </label>
+                    <input type="text" class="form-control" placeholder="example@upi" value="{{ order.buyer.username }}@upi">
+                </div>
+            </div>
+
+            <!-- CARD TAB -->
+            <div class="payment-tab-content {% if order.payment_method == 'online' %}active{% endif %}" id="tab-card">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted">
+                        {% if selected_lang == 'hi' %}कार्ड संख्या
+                        {% elif selected_lang == 'ne' %}कार्ड नम्बर
+                        {% else %}Card Number
+                        {% endif %}
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-credit-card text-muted"></i></span>
+                        <input type="text" class="form-control" id="cardNumber" placeholder="4111 2222 3333 4444" value="4111 2222 3333 4444">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label small fw-semibold text-muted">
+                            {% if selected_lang == 'hi' %}समाप्ति (माह/वर्ष)
+                            {% elif selected_lang == 'ne' %}समाप्ति (महिना/वर्ष)
+                            {% else %}Expiry (MM/YY)
+                            {% endif %}
+                        </label>
+                        <input type="text" class="form-control" placeholder="12/28" value="12/29">
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label small fw-semibold text-muted">CVV</label>
+                        <input type="password" class="form-control" placeholder="123" value="123">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted">
+                        {% if selected_lang == 'hi' %}कार्डधारक का नाम
+                        {% elif selected_lang == 'ne' %}कार्डधारकको नाम
+                        {% else %}Cardholder Name
+                        {% endif %}
+                    </label>
+                    <input type="text" class="form-control" placeholder="Full Name" value="{{ order.buyer.get_full_name|default:order.buyer.username }}">
+                </div>
+            </div>
+
+            <!-- BANK TAB -->
+            <div class="payment-tab-content" id="tab-bank">
+                <p class="small text-muted mb-3 text-center">
+                    {% if selected_lang == 'hi' %}नीचे दी गई सूची से अपना बैंक चुनें
+                    {% elif selected_lang == 'ne' %}तल दिइएको सूचीबाट आफ्नो बैंक छनौट गर्नुहोस्
+                    {% else %}Select your bank from the popular banks list below
+                    {% endif %}
+                </p>
+                <div class="bank-grid">
+                    <div class="bank-logo-btn" onclick="selectBank(this)">
+                        <i class="fas fa-university bank-icon"></i>
+                        <span>SBI</span>
+                    </div>
+                    <div class="bank-logo-btn" onclick="selectBank(this)">
+                        <i class="fas fa-university bank-icon" style="color: #0d6efd;"></i>
+                        <span>HDFC Bank</span>
+                    </div>
+                    <div class="bank-logo-btn" onclick="selectBank(this)">
+                        <i class="fas fa-university bank-icon" style="color: #fd7e14;"></i>
+                        <span>ICICI Bank</span>
+                    </div>
+                    <div class="bank-logo-btn" onclick="selectBank(this)">
+                        <i class="fas fa-university bank-icon" style="color: #dc3545;"></i>
+                        <span>Axis Bank</span>
+                    </div>
+                    <div class="bank-logo-btn" onclick="selectBank(this)">
+                        <i class="fas fa-university bank-icon" style="color: #6f42c1;"></i>
+                        <span>Kotak Bank</span>
+                    </div>
+                    <div class="bank-logo-btn" onclick="selectBank(this)">
+                        <i class="fas fa-university bank-icon" style="color: #20c997;"></i>
+                        <span>Punjab National</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMULATION CONTROL BUTTONS -->
+            <div class="sim-buttons">
+                <button type="button" class="btn btn-sim-fail" onclick="submitSimulation('fail')">
+                    <i class="fas fa-times-circle me-1"></i> 
+                    {% if selected_lang == 'hi' %}रद्द करें
+                    {% elif selected_lang == 'ne' %}रद्द गर्नुहोस्
+                    {% else %}Cancel / Fail
+                    {% endif %}
+                </button>
+                <button type="button" class="btn-sim-success" onclick="submitSimulation('success')">
+                    <i class="fas fa-check-circle me-1"></i> 
+                    {% if selected_lang == 'hi' %}भुगतान सफलता का अनुकरण करें
+                    {% elif selected_lang == 'ne' %}भुक्तानी सफलताको सिमुलेट गर्नुहोस्
+                    {% else %}Simulate Payment Success
+                    {% endif %}
+                </button>
+            </div>
+            <div class="mt-3 text-center">
+                <a href="{% url 'cart' %}" class="text-decoration-none text-muted small fw-bold">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    {% if selected_lang == 'hi' %}कार्ट में वापस जाएँ / भुगतान विधि बदलें
+                    {% elif selected_lang == 'ne' %}कार्टमा फिर्ता जानुहोस् / भुक्तानी विधि परिवर्तन गर्नुहोस्
+                    {% else %}Back to Cart / Change Payment Method
+                    {% endif %}
+                </a>
+            </div>
+
+            <div class="secure-badge">
+                <i class="fas fa-shield-alt text-success"></i> 
+                {% if selected_lang == 'hi' %}सुरक्षित 256-बिट एसएसएल एन्क्रिप्टेड कनेक्शन
+                {% elif selected_lang == 'ne' %}सुरक्षित २५६-बिट एसएसएल इन्क्रिप्टेड जडान
+                {% else %}Secure 256-bit SSL encrypted connection
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form to POST the simulation response -->
+    <form action="{% url 'payment_verify' order.id %}" method="POST" id="mock-payment-form">
+        {% csrf_token %}
+        <input type="hidden" name="razorpay_payment_id" id="mock_payment_id">
+        <input type="hidden" name="razorpay_order_id" value="{{ razorpay_order_id }}">
+        <input type="hidden" name="razorpay_signature" id="mock_signature">
+        <input type="hidden" name="is_mocked" value="true">
+    </form>
+
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.payment-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.payment-tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function selectBank(btn) {
+            document.querySelectorAll('.bank-logo-btn').forEach(b => b.style.borderColor = '#eaeaea');
+            btn.style.borderColor = 'var(--green-mid)';
+        }
+
+        function submitSimulation(status) {
+            const overlay = document.getElementById('loadingOverlay');
+            const title = document.getElementById('overlayTitle');
+            overlay.style.display = 'flex';
+
+            if (status === 'success') {
+                title.innerText = 'Authorizing & Simulating Success...';
+                const randomId = 'pay_mock_' + Math.random().toString(36).substring(2, 12).toUpperCase();
+                document.getElementById('mock_payment_id').value = randomId;
+                document.getElementById('mock_signature').value = 'sig_mock_signature_' + Math.random().toString(36).substring(2, 12);
+                
+                setTimeout(() => {
+                    document.getElementById('mock-payment-form').submit();
+                }, 1500);
+            } else {
+                title.innerText = 'Cancelling Payment...';
+                setTimeout(() => {
+                    window.location.href = "{% url 'payment_failed' order.id %}";
+                }, 1000);
+            }
+        }
+    </script>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

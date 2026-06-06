@@ -1,0 +1,146 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}
+    {% if selected_lang == 'hi' %}मेरे ऑर्डर
+    {% elif selected_lang == 'ne' %}मेरो अर्डर
+    {% else %}My Orders
+    {% endif %} - Kisaan Mandi
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h3 class="fw-bold mb-4 d-flex align-items-center gap-2 flex-wrap">
+        <span>📦</span>
+        <span>
+            {% if user.is_farmer %}
+                {% if selected_lang == 'hi' %}प्राप्त ऑर्डर{% elif selected_lang == 'ne' %}प्राप्त अर्डर{% else %}Received Orders{% endif %}
+            {% else %}
+                {% if selected_lang == 'hi' %}मेरे ऑर्डर{% elif selected_lang == 'ne' %}मेरो अर्डर{% else %}My Orders{% endif %}
+            {% endif %}
+        </span>
+        {% if current_filter %}
+            <span class="badge bg-secondary fs-6 rounded-pill text-capitalize px-3 py-2 ms-2">
+                {% if current_filter == 'pending' %}
+                    {% if selected_lang == 'hi' %}प्रतीक्षारत{% elif selected_lang == 'ne' %}बाँकी{% else %}Pending{% endif %}
+                {% elif current_filter == 'confirmed' %}
+                    {% if selected_lang == 'hi' %}पुष्टि की गई{% elif selected_lang == 'ne' %}पुष्टि गरियो{% else %}Confirmed{% endif %}
+                {% elif current_filter == 'dispatched' %}
+                    {% if selected_lang == 'hi' %}भेजा गया{% elif selected_lang == 'ne' %}पठाइयो{% else %}Dispatched{% endif %}
+                {% elif current_filter == 'delivered' %}
+                    {% if selected_lang == 'hi' %}वितरित{% elif selected_lang == 'ne' %}वितरण भयो{% else %}Delivered{% endif %}
+                {% elif current_filter == 'cancelled' %}
+                    {% if selected_lang == 'hi' %}रद्द किया गया{% elif selected_lang == 'ne' %}रद्द गरियो{% else %}Cancelled{% endif %}
+                {% endif %}
+            </span>
+            <a href="{% url 'my_orders' %}" class="btn btn-sm btn-link text-decoration-none text-muted fs-6 py-0 d-flex align-items-center gap-1">
+                <i class="fas fa-times-circle"></i> 
+                {% if selected_lang == 'hi' %}साफ़ करें{% elif selected_lang == 'ne' %}हटाउनुहोस्{% else %}Clear{% endif %}
+            </a>
+        {% endif %}
+    </h3>
+    {% if orders %}
+        {% if user.is_farmer %}
+        <div class="table-responsive">
+            <table class="table premium-table align-middle m-0" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Buyer</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><a href="{% url 'order_detail' order.id %}" class="fw-bold text-success text-decoration-none">#ORD{{ order.id }}</a></td>
+                        <td>{{ order.buyer.get_full_name|default:order.buyer.username }}</td>
+                        <td>
+                            <strong>
+                                {% if selected_lang == 'hi' and order.product.name_hi %}{{ order.product.name_hi }}
+                                {% elif selected_lang == 'ne' and order.product.name_ne %}{{ order.product.name_ne }}
+                                {% else %}{{ order.product.name }}{% endif %}
+                            </strong>
+                        </td>
+                        <td>{{ order.quantity }} {{ order.product.unit }}</td>
+                        <td class="fw-semibold">₹{{ order.total_price }}</td>
+                        <td>
+                            <span class="badge status-{{ order.status }} rounded-pill px-3 py-1">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-kisaan rounded-pill">
+                                {% if selected_lang == 'hi' %}विवरण{% elif selected_lang == 'ne' %}विवरण{% else %}Details{% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="row g-3">
+            {% for order in orders %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-body">
+                        <div class="row align-items-center g-2">
+                            <div class="col-md-2">
+                                <p class="fw-bold mb-0">
+                                    {% if selected_lang == 'hi' %}ऑर्डर #{{ order.id }}
+                                    {% elif selected_lang == 'ne' %}अर्डर #{{ order.id }}
+                                    {% else %}Order #{{ order.id }}
+                                    {% endif %}
+                                </p>
+                                <small class="text-muted">{{ order.created_at|date:"d M Y" }}</small>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="fw-semibold mb-0">
+                                    {% if selected_lang == 'hi' and order.product.name_hi %}{{ order.product.name_hi }}
+                                    {% elif selected_lang == 'ne' and order.product.name_ne %}{{ order.product.name_ne }}
+                                    {% else %}{{ order.product.name }}
+                                    {% endif %}
+                                </p>
+                                <small class="text-muted">{{ order.quantity }} {{ order.product.unit }}</small>
+                            </div>
+                            <div class="col-md-2">
+                                <p class="price-tag mb-0">₹{{ order.total_price }}</p>
+                                <small class="text-muted">{{ order.get_payment_method_display }}</small>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="badge status-{{ order.status }} rounded-pill px-3 py-2">{{ order.get_status_display }}</span>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <a href="{% url 'order_detail' order.pk %}" class="btn btn-kisaan btn-sm">
+                                    {% if selected_lang == 'hi' %}विवरण{% elif selected_lang == 'ne' %}विवरण{% else %}Details{% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <div style="font-size:4rem;">📦</div>
+        <h5 class="mt-3 text-muted">
+            {% if selected_lang == 'hi' %}कोई ऑर्डर नहीं है
+            {% elif selected_lang == 'ne' %}कुनै अर्डर छैन
+            {% else %}No orders yet
+            {% endif %}
+        </h5>
+        <a href="{% url 'product_list' %}" class="btn btn-kisaan mt-2">
+            {% if selected_lang == 'hi' %}मंडी देखें
+            {% elif selected_lang == 'ne' %}बजार हेर्नुस्
+            {% else %}Browse Marketplace
+            {% endif %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

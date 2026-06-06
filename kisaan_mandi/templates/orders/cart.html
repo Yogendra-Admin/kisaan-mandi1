@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}
+    {% if selected_lang == 'hi' %}कार्ट
+    {% elif selected_lang == 'ne' %}कार्ट
+    {% else %}Cart
+    {% endif %} - Kisaan Mandi
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h3 class="fw-bold mb-4">
+        🛒 
+        {% if selected_lang == 'hi' %}आपका कार्ट
+        {% elif selected_lang == 'ne' %}तपाईंको कार्ट
+        {% else %}Your Cart
+        {% endif %}
+    </h3>
+
+    {% if cart_items %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            {% for item in cart_items %}
+            <div class="card border-0 shadow-sm rounded-3 mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 col-3 text-center">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% elif item.product.product_image_url %}
+                            <img src="{{ item.product.product_image_url }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <span style="font-size:2.5rem;">{{ item.product.product_icon }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 col-9">
+                            <h6 class="fw-bold mb-0">
+                                {% if selected_lang == 'hi' and item.product.name_hi %}{{ item.product.name_hi }}
+                                {% elif selected_lang == 'ne' and item.product.name_ne %}{{ item.product.name_ne }}
+                                {% else %}{{ item.product.name }}
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted d-block">
+                                {% if selected_lang == 'hi' %}द्वारा:
+                                {% elif selected_lang == 'ne' %}द्वारा:
+                                {% else %}By:
+                                {% endif %} 
+                                {{ item.product.farmer.first_name|default:item.product.farmer.username }}
+                            </small>
+                            <small class="text-muted">
+                                ₹{{ item.product.price_per_unit }} / 
+                                {% if selected_lang == 'hi' and item.product.unit == 'kg' %}किग्रा
+                                {% elif selected_lang == 'ne' and item.product.unit == 'kg' %}केजी
+                                {% else %}{{ item.product.unit }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="col-md-3 col-6 mt-2 mt-md-0">
+                            <!-- Quantity Editor Form -->
+                            <form method="post" action="{% url 'update_cart_quantity' item.pk %}" class="d-flex align-items-center gap-2">
+                                {% csrf_token %}
+                                <label class="small fw-semibold text-muted mb-0">
+                                    {% if selected_lang == 'hi' %}मात्रा:
+                                    {% elif selected_lang == 'ne' %}मात्रा:
+                                    {% else %}Qty:
+                                    {% endif %}
+                                </label>
+                                <input type="number" name="quantity" value="{{ item.quantity|floatformat:1 }}" step="0.1" min="0.1" max="{{ item.product.quantity_available }}" class="form-control form-control-sm" style="width: 70px;" onchange="this.form.submit()">
+                            </form>
+                        </div>
+                        <div class="col-md-3 col-6 text-end mt-2 mt-md-0">
+                            <div class="mb-2">
+                                <span class="fw-bold text-success fs-6">₹{{ item.subtotal }}</span>
+                            </div>
+                            <form method="post" action="{% url 'remove_from_cart' item.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm w-100">
+                                    {% if selected_lang == 'hi' %}हटाएं
+                                    {% elif selected_lang == 'ne' %}हटाउनुस्
+                                    {% else %}Remove
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3">
+                    {% if selected_lang == 'hi' %}ऑर्डर सारांश
+                    {% elif selected_lang == 'ne' %}अर्डर सारांश
+                    {% else %}Order Summary
+                    {% endif %}
+                </h5>
+                <hr>
+                <p class="d-flex justify-content-between">
+                    <span>
+                        {% if selected_lang == 'hi' %}कुल वस्तुएं:
+                        {% elif selected_lang == 'ne' %}जम्मा वस्तुहरू:
+                        {% else %}Total Items:
+                        {% endif %}
+                    </span> 
+                    <strong>{{ cart_items|length }}</strong>
+                </p>
+                <p class="d-flex justify-content-between price-tag fs-5">
+                    <span class="text-dark fw-normal">
+                        {% if selected_lang == 'hi' %}अनुमानित कुल:
+                        {% elif selected_lang == 'ne' %}अनुमानित जम्मा:
+                        {% else %}Est. Total:
+                        {% endif %}
+                    </span> 
+                    <strong>₹{{ total }}</strong>
+                </p>
+                <hr>
+                <a href="{% url 'place_cart_order' %}" class="btn btn-orange w-100 mb-2">
+                    <i class="fas fa-shopping-bag me-2"></i>
+                    {% if selected_lang == 'hi' %}चेकआउट / सभी खरीदें
+                    {% elif selected_lang == 'ne' %}चेकआउट / सबै किन्नुहोस्
+                    {% else %}Checkout All
+                    {% endif %}
+                </a>
+                <a href="{% url 'product_list' %}" class="btn btn-outline-secondary w-100">
+                    {% if selected_lang == 'hi' %}खरीदारी जारी रखें
+                    {% elif selected_lang == 'ne' %}किनमेल जारी राख्नुस्
+                    {% else %}Continue Shopping
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div style="font-size:5rem;">🛒</div>
+        <h5 class="mt-3">
+            {% if selected_lang == 'hi' %}आपका कार्ट खाली है
+            {% elif selected_lang == 'ne' %}तपाईंको कार्ट खाली छ
+            {% else %}Your cart is empty
+            {% endif %}
+        </h5>
+        <a href="{% url 'product_list' %}" class="btn btn-kisaan mt-2">
+            {% if selected_lang == 'hi' %}मंडी देखें
+            {% elif selected_lang == 'ne' %}बजार हेर्नुस्
+            {% else %}Browse Marketplace
+            {% endif %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

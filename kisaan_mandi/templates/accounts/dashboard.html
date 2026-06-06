@@ -1,0 +1,305 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}Dashboard - Kisaan Mandi{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h3 class="fw-bold mb-0">
+                {% if user.is_farmer %}👨‍🌾{% else %}🛒{% endif %}
+                {% if selected_lang == 'hi' %}डैशबोर्ड{% elif selected_lang == 'ne' %}ड्यासबोर्ड{% else %}Dashboard{% endif %}
+            </h3>
+            <p class="text-muted mb-0">
+                {% if selected_lang == 'hi' %}स्वागत{% elif selected_lang == 'ne' %}स्वागत{% else %}Welcome{% endif %}:
+                <strong>{{ user.first_name|default:user.username }}</strong>
+                &nbsp;—&nbsp;
+                <span class="badge bg-success">
+                    {% if selected_lang == 'hi' %}
+                        {% if user.is_farmer %}किसान{% else %}खरीदार{% endif %}
+                    {% elif selected_lang == 'ne' %}
+                        {% if user.is_farmer %}किसान{% else %}खरिदकर्ता{% endif %}
+                    {% else %}
+                        {{ user.get_role_display }}
+                    {% endif %}
+                </span>
+            </p>
+        </div>
+        {% if user.is_farmer %}
+        <div class="col-auto">
+            <a href="{% url 'add_product' %}" class="btn btn-orange">
+                <i class="fas fa-plus me-2"></i>
+                {% if selected_lang == 'hi' %}उत्पाद जोड़ें{% elif selected_lang == 'ne' %}उत्पादन थप्नुस्{% else %}Add Product{% endif %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% if user.is_farmer %}
+    <!-- Farmer Stats Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Total Products Card -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{% url 'my_products' %}" class="text-decoration-none text-dark d-block h-100">
+                <div class="card dashboard-stat-card p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">
+                                {% if selected_lang == 'hi' %}कुल उत्पाद{% elif selected_lang == 'ne' %}जम्मा उत्पादन{% else %}Total Products{% endif %}
+                            </span>
+                            <h3 class="fw-bold mt-1 mb-0">{{ total_products }}</h3>
+                        </div>
+                        <div class="stat-badge bg-success-subtle text-success">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Total Orders Card -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{% url 'my_orders' %}" class="text-decoration-none text-dark d-block h-100">
+                <div class="card dashboard-stat-card p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">
+                                {% if selected_lang == 'hi' %}कुल ऑर्डर{% elif selected_lang == 'ne' %}जम्मा अर्डर{% else %}Total Orders{% endif %}
+                            </span>
+                            <h3 class="fw-bold mt-1 mb-0">{{ total_orders }}</h3>
+                        </div>
+                        <div class="stat-badge bg-primary-subtle text-primary">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Pending Orders Card -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{% url 'my_orders' %}?status=pending" class="text-decoration-none text-dark d-block h-100">
+                <div class="card dashboard-stat-card p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">
+                                {% if selected_lang == 'hi' %}लंबित ऑर्डर{% elif selected_lang == 'ne' %}बाँकी अर्डर{% else %}Pending Orders{% endif %}
+                            </span>
+                            <h3 class="fw-bold mt-1 mb-0">{{ pending_orders }}</h3>
+                        </div>
+                        <div class="stat-badge bg-warning-subtle text-warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Completed Orders Card -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{% url 'my_orders' %}?status=delivered" class="text-decoration-none text-dark d-block h-100">
+                <div class="card dashboard-stat-card p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">
+                                {% if selected_lang == 'hi' %}पूरे हुए ऑर्डर{% elif selected_lang == 'ne' %}पूरा भएका अर्डर{% else %}Completed Orders{% endif %}
+                            </span>
+                            <h3 class="fw-bold mt-1 mb-0">{{ completed_orders }}</h3>
+                        </div>
+                        <div class="stat-badge bg-info-subtle text-info">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Total Sales Card -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{% url 'sales_report' %}" class="text-decoration-none text-dark d-block h-100">
+                <div class="card dashboard-stat-card p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">
+                                {% if selected_lang == 'hi' %}कुल बिक्री{% elif selected_lang == 'ne' %}जम्मा बिक्री{% else %}Total Sales{% endif %}
+                            </span>
+                            <h3 class="fw-bold mt-1 mb-0">₹{{ total_sales|floatformat:0 }}</h3>
+                        </div>
+                        <div class="stat-badge bg-danger-subtle text-danger">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Total Earnings Card -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{% url 'sales_report' %}" class="text-decoration-none text-dark d-block h-100">
+                <div class="card dashboard-stat-card p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">
+                                {% if selected_lang == 'hi' %}कुल कमाई{% elif selected_lang == 'ne' %}कुल कमाई{% else %}Total Earnings{% endif %}
+                            </span>
+                            <h3 class="fw-bold mt-1 mb-0">₹{{ total_earnings|floatformat:0 }}</h3>
+                        </div>
+                        <div class="stat-badge bg-success-subtle text-success">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row g-4">
+        <!-- Recent Orders Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        {% if selected_lang == 'hi' %}हाल के ऑर्डर{% elif selected_lang == 'ne' %}हालका अर्डर{% else %}Recent Orders{% endif %}
+                    </h5>
+                    <a href="{% url 'my_orders' %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                        {% if selected_lang == 'hi' %}सभी देखें{% elif selected_lang == 'ne' %}सबै हेर्नुस्{% else %}View All{% endif %}
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table premium-table align-middle m-0" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in my_orders %}
+                            <tr>
+                                <td><a href="{% url 'order_detail' order.id %}" class="fw-bold text-success text-decoration-none">#ORD{{ order.id }}</a></td>
+                                <td>
+                                    <strong>
+                                        {% if selected_lang == 'hi' and order.product.name_hi %}{{ order.product.name_hi }}
+                                        {% elif selected_lang == 'ne' and order.product.name_ne %}{{ order.product.name_ne }}
+                                        {% else %}{{ order.product.name }}{% endif %}
+                                    </strong>
+                                </td>
+                                <td>{{ order.quantity }} {{ order.product.unit }}</td>
+                                <td class="fw-semibold">₹{{ order.total_price }}</td>
+                                <td>
+                                    <span class="badge status-{{ order.status }} rounded-pill px-3 py-1">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">{{ order.created_at|date:"d M Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No recent orders yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Products Column -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        {% if selected_lang == 'hi' %}मेरे उत्पाद{% elif selected_lang == 'ne' %}मेरो उत्पादन{% else %}My Products{% endif %}
+                    </h5>
+                    <a href="{% url 'my_products' %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                        {% if selected_lang == 'hi' %}सभी देखें{% elif selected_lang == 'ne' %}सबै हेर्नुस्{% else %}View All{% endif %}
+                    </a>
+                </div>
+                
+                <div class="d-flex flex-column gap-3">
+                    {% for product in my_products %}
+                    <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3">
+                        <div class="fs-2 text-center" style="width: 50px;">{{ product.category.icon|default:'🌾' }}</div>
+                        <div class="flex-grow-1">
+                            <h6 class="fw-semibold mb-0">
+                                {% if selected_lang == 'hi' and product.name_hi %}{{ product.name_hi }}
+                                {% elif selected_lang == 'ne' and product.name_ne %}{{ product.name_ne }}
+                                {% else %}{{ product.name }}{% endif %}
+                            </h6>
+                            <small class="text-muted">₹{{ product.price_per_unit }}/{{ product.unit }} | Qty: {{ product.quantity_available }}</small>
+                        </div>
+                        <span class="badge {% if product.status == 'active' %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                            {{ product.status }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-3 mb-0">No products yet. <a href="{% url 'add_product' %}">Add one!</a></p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Buyer Dashboard -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <a href="{% url 'my_orders' %}" class="stat-card d-block text-decoration-none" style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:white;">
+                <i class="fas fa-shopping-bag fa-2x mb-2 opacity-75"></i>
+                <h2 class="fw-bold">{{ total_orders }}</h2>
+                <p class="mb-0">{% if selected_lang == 'hi' %}कुल ऑर्डर{% elif selected_lang == 'ne' %}जम्मा अर्डर{% else %}Total Orders{% endif %}</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'my_orders' %}?status=pending" class="stat-card d-block text-decoration-none" style="background:linear-gradient(135deg,#e65100,#f57c00);color:white;">
+                <i class="fas fa-clock fa-2x mb-2 opacity-75"></i>
+                <h2 class="fw-bold">{{ pending }}</h2>
+                <p class="mb-0">{% if selected_lang == 'hi' %}प्रतीक्षारत{% elif selected_lang == 'ne' %}बाँकी{% else %}Pending{% endif %}</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'my_orders' %}?status=delivered" class="stat-card d-block text-decoration-none" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:white;">
+                <i class="fas fa-check fa-2x mb-2 opacity-75"></i>
+                <h2 class="fw-bold">{{ delivered }}</h2>
+                <p class="mb-0">{% if selected_lang == 'hi' %}वितरित{% elif selected_lang == 'ne' %}डेलिभर भयो{% else %}Delivered{% endif %}</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius:16px;">
+        <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+            <h5 class="fw-bold mb-0">
+                {% if selected_lang == 'hi' %}हाल के ऑर्डर{% elif selected_lang == 'ne' %}हालका अर्डर{% else %}Recent Orders{% endif %}
+            </h5>
+        </div>
+        <div class="card-body px-4">
+            {% for order in my_orders %}
+            <div class="d-flex align-items-center py-2 border-bottom">
+                <div class="flex-grow-1">
+                    <p class="mb-0 fw-semibold">
+                        {% if selected_lang == 'hi' %}ऑर्डर{% elif selected_lang == 'ne' %}अर्डर{% else %}Order{% endif %}
+                        #{{ order.id }} — {{ order.product.name }}
+                    </p>
+                    <small class="text-muted">₹{{ order.total_price }} | {{ order.created_at|date:"d M Y" }}</small>
+                </div>
+                <a href="{% url 'order_detail' order.pk %}" class="btn btn-kisaan btn-sm me-2">
+                    {% if selected_lang == 'hi' %}विवरण{% elif selected_lang == 'ne' %}विवरण{% else %}Details{% endif %}
+                </a>
+                <span class="badge status-{{ order.status }} rounded-pill px-3">
+                    {% if selected_lang == 'hi' %}{{ order.get_status_display }}{% elif selected_lang == 'ne' %}{{ order.get_status_display }}{% else %}{{ order.get_status_display }}{% endif %}
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-muted py-2">
+                {% if selected_lang == 'hi' %}अभी कोई ऑर्डर नहीं।{% elif selected_lang == 'ne' %}अहिले कुनै अर्डर छैन।{% else %}No orders yet.{% endif %}
+                <a href="{% url 'product_list' %}">
+                    {% if selected_lang == 'hi' %}उत्पाद देखें!{% elif selected_lang == 'ne' %}उत्पादन हेर्नुस्!{% else %}Browse products!{% endif %}
+                </a>
+            </p>
+            {% endfor %}
+            <a href="{% url 'my_orders' %}" class="btn btn-kisaan btn-sm mt-3">
+                {% if selected_lang == 'hi' %}सभी ऑर्डर{% elif selected_lang == 'ne' %}सबै अर्डर{% else %}View All Orders{% endif %}
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

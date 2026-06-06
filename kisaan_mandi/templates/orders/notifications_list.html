@@ -1,0 +1,71 @@
+{% extends base_template|default:"base.html" %}
+
+{% block title %}
+    {% if selected_lang == 'hi' %}सूचनाएं{% elif selected_lang == 'ne' %}सूचनाहरू{% else %}Notifications{% endif %} - Kisaan Mandi
+{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h3 class="fw-bold mb-0">
+            🔔 
+            {% if selected_lang == 'hi' %}सूचनाएं और संदेश{% elif selected_lang == 'ne' %}सूचना र सन्देशहरू{% else %}Messages & Alerts{% endif %}
+        </h3>
+        {% if notifications %}
+        <a href="{% url 'clear_notifications' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+            <i class="fas fa-trash-alt me-2"></i>
+            {% if selected_lang == 'hi' %}सभी साफ करें{% elif selected_lang == 'ne' %}सबै सफा गर्नुस्{% else %}Clear All{% endif %}
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="list-group list-group-flush">
+            {% for notif in notifications %}
+            <div class="list-group-item p-3 {% if not notif.is_read %}bg-light{% endif %} border-bottom">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex gap-3">
+                        <div class="fs-4 text-success mt-1">
+                            {% if "payment" in notif.message_en|lower or "paid" in notif.message_en|lower %}
+                            💳
+                            {% elif "cancel" in notif.message_en|lower %}
+                            ❌
+                            {% elif "deliver" in notif.message_en|lower %}
+                            🎉
+                            {% elif "dispatch" in notif.message_en|lower or "ship" in notif.message_en|lower %}
+                            🚚
+                            {% else %}
+                            ✉️
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="mb-1 text-dark {% if not notif.is_read %}fw-semibold{% endif %}" style="font-size: 0.95rem; line-height: 1.4;">
+                                {% if selected_lang == 'hi' %}{{ notif.message_hi }}
+                                {% elif selected_lang == 'ne' %}{{ notif.message_ne }}
+                                {% else %}{{ notif.message_en }}
+                                {% endif %}
+                            </p>
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                <i class="far fa-clock me-1"></i>{{ notif.created_at|date:"d M Y, h:i A" }} ({{ notif.created_at|timesince }} ago)
+                            </small>
+                        </div>
+                    </div>
+                    {% if not notif.is_read %}
+                    <a href="{% url 'mark_notification_read' notif.pk %}" class="btn btn-sm btn-outline-success border-0 py-0 px-2" title="Mark as Read">
+                        <i class="fas fa-check-circle"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5">
+                <div style="font-size: 4rem;">🔔</div>
+                <h5 class="text-muted mt-3">
+                    {% if selected_lang == 'hi' %}कोई नई सूचना नहीं है{% elif selected_lang == 'ne' %}कुनै नयाँ सूचना छैन{% else %}No notifications yet{% endif %}
+                </h5>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

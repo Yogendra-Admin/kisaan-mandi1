@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Marketplace / मंडी / बजार - Kisaan Mandi{% endblock %}
+{% block content %}
+<div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:white;padding:40px 0 30px;">
+    <div class="container">
+        <h2 class="fw-bold mb-1">🛒 {% if selected_lang == 'hi' %}मंडी{% elif selected_lang == 'ne' %}बजार{% else %}Marketplace{% endif %}</h2>
+        <p style="opacity:0.85" class="mb-3">
+            {% if selected_lang == 'hi' %}किसानों से सीधे ताज़ा उत्पाद{% elif selected_lang == 'ne' %}किसानबाट सिधै ताजा उत्पादन{% else %}Fresh produce directly from farmers{% endif %}
+        </p>
+        <form method="get" class="row g-2">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search / खोजें / खोज्नुस्..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="state" class="form-control" placeholder="State/Province / राज्य / प्रदेश">
+            </div>
+            <div class="col-md-2">
+                <select name="sort" class="form-select">
+                    <option value="-created_at">Newest First</option>
+                    <option value="price_per_unit">Price: Low→High</option>
+                    <option value="-price_per_unit">Price: High→Low</option>
+                    <option value="name">Name A-Z</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-orange w-100">Search / खोज</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm" style="border-radius:16px;">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">{% if selected_lang == 'hi' %}श्रेणियाँ{% elif selected_lang == 'ne' %}श्रेणी{% else %}Categories{% endif %}</h6>
+                    <a href="{% url 'product_list' %}" class="category-pill {% if not selected_category %}active{% endif %} d-block mb-1" style="border-radius:8px;">
+                        🌐 {% if selected_lang == 'hi' %}सभी{% elif selected_lang == 'ne' %}सबै{% else %}All{% endif %}
+                    </a>
+                    {% for cat in categories %}
+                    <a href="?category={{ cat.slug }}" class="category-pill {% if selected_category == cat.slug %}active{% endif %} d-block mb-1" style="border-radius:8px;">
+                        {{ cat.icon }}
+                        {% if selected_lang == 'hi' %}{{ cat.name_hi|default:cat.name }}
+                        {% elif selected_lang == 'ne' %}{{ cat.name_ne|default:cat.name }}
+                        {% else %}{{ cat.name }}{% endif %}
+                    </a>
+                    {% endfor %}
+                    <hr>
+                    <h6 class="fw-bold mb-2">{% if selected_lang == 'hi' %}फ़िल्टर{% elif selected_lang == 'ne' %}फिल्टर{% else %}Filters{% endif %}</h6>
+                    <a href="?organic=1" class="btn btn-sm btn-outline-success w-100 mb-2">🍃 {% if selected_lang == 'hi' %}केवल जैविक{% elif selected_lang == 'ne' %}जैविक मात्र{% else %}Organic Only{% endif %}</a>
+                    {% if user.is_authenticated and user.is_farmer %}
+                    <a href="{% url 'add_product' %}" class="btn btn-orange btn-sm w-100">
+                        + {% if selected_lang == 'hi' %}उत्पाद जोड़ें{% elif selected_lang == 'ne' %}उत्पादन थप्नुस्{% else %}Add Product{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">
+                    <strong>{{ products|length }}</strong>
+                    {% if selected_lang == 'hi' %}उत्पाद मिले{% elif selected_lang == 'ne' %}उत्पादन भेटियो{% else %}products found{% endif %}
+                </p>
+            </div>
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card product-card h-100">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% elif product.product_image_url %}
+                        <img src="{{ product.product_image_url }}" class="card-img-top" alt="{{ product.name }}" style="height:180px; object-fit: cover;">
+                        {% else %}
+                        <div class="img-placeholder" style="height:180px; font-size: 4.5rem;">{{ product.product_icon }}</div>
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            {% if product.is_organic %}<span class="badge-organic mb-1 d-inline-block">🍃 Organic</span>{% endif %}
+                            <h6 class="fw-bold mb-0">
+                                {% if selected_lang == 'hi' %}{{ product.name_hi|default:product.name }}
+                                {% elif selected_lang == 'ne' %}{{ product.name_ne|default:product.name }}
+                                {% else %}{{ product.name }}{% endif %}
+                            </h6>
+                            <p class="price-tag mb-1 mt-1">₹{{ product.price_per_unit }}<small class="text-muted fw-normal">/{{ product.unit }}</small></p>
+                            <p class="text-muted small mb-1"><i class="fas fa-box me-1"></i>{{ product.quantity_available }} {{ product.unit }}</p>
+                            <p class="text-muted small mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ product.state|default:'—' }}</p>
+                            <p class="text-muted small mb-3"><i class="fas fa-user me-1"></i>{{ product.farmer.first_name|default:product.farmer.username }}</p>
+                            <div class="mt-auto d-flex gap-2">
+                                <a href="{% url 'product_detail' product.pk %}" class="btn btn-kisaan btn-sm flex-grow-1">{% if selected_lang == 'hi' %}विवरण{% elif selected_lang == 'ne' %}विवरण{% else %}Details{% endif %}</a>
+                                {% if user.is_authenticated and not user.is_farmer %}
+                                <a href="{% url 'add_to_cart' product.pk %}" class="btn btn-outline-success btn-sm" title="Add to Cart"><i class="fas fa-cart-plus"></i></a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <div style="font-size:4rem;">🌾</div>
+                    <h5 class="text-muted mt-3">
+                        {% if selected_lang == 'hi' %}कोई उत्पाद नहीं मिला{% elif selected_lang == 'ne' %}कुनै उत्पादन भेटिएन{% else %}No products found{% endif %}
+                    </h5>
+                    <a href="{% url 'product_list' %}" class="btn btn-kisaan mt-2">{% if selected_lang == 'hi' %}फ़िल्टर हटाएं{% elif selected_lang == 'ne' %}फिल्टर हटाउनुस्{% else %}Clear Filters{% endif %}</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

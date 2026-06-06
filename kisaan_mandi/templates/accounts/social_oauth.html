@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if selected_lang == 'hi' %}{{ provider_display }} के साथ साइन इन करें{% elif selected_lang == 'ne' %}{{ provider_display }} मार्फत साइन इन गर्नुहोस्{% else %}Sign in with {{ provider_display }}{% endif %} - Kisaan Mandi{% endblock %}
+{% block navbar %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        {% if provider == 'google' %}
+        --provider-color: #4285F4;
+        --provider-hover: #357ae8;
+        --provider-bg: #ffffff;
+        --provider-text-color: #5f6368;
+        {% elif provider == 'facebook' %}
+        --provider-color: #1877F2;
+        --provider-hover: #166fe5;
+        --provider-bg: #1877F2;
+        --provider-text-color: #ffffff;
+        {% else %}
+        /* Apple */
+        --provider-color: #000000;
+        --provider-hover: #1c1c1e;
+        --provider-bg: #000000;
+        --provider-text-color: #ffffff;
+        {% endif %}
+    }
+    
+    .oauth-bg {
+        background: linear-gradient(135deg, #eef3f0 0%, #d5e3da 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+    .oauth-card {
+        width: 460px;
+        max-width: 95%;
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.05);
+        padding: 40px;
+    }
+    .oauth-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .brand-logo {
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .oauth-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #202124;
+        margin-bottom: 6px;
+    }
+    .oauth-subtitle {
+        font-size: 0.95rem;
+        color: #5f6368;
+    }
+    .identity-card {
+        border: 1.5px solid #eaeaea;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: #ffffff;
+    }
+    .identity-card:hover {
+        background: #fdfefe;
+        border-color: var(--provider-color);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    }
+    .identity-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #e2ede5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #167d46;
+    }
+    .identity-info {
+        flex: 1;
+        text-align: left;
+    }
+    .identity-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #202124;
+        margin-bottom: 2px;
+    }
+    .identity-email {
+        font-size: 0.85rem;
+        color: #5f6368;
+    }
+    .identity-role {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        background: #e8f0fe;
+        color: #1a73e8;
+        border-radius: 20px;
+        font-weight: 700;
+    }
+    .identity-role.farmer {
+        background: #e6f4ea;
+        color: #137333;
+    }
+    .custom-form-toggle {
+        display: block;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--provider-color);
+        font-weight: 600;
+        text-decoration: none;
+        margin-top: 20px;
+        transition: opacity 0.2s;
+    }
+    .custom-form-toggle:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+    .custom-input-group {
+        position: relative;
+        background: #f1f3f4;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        padding: 2px 14px;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+        margin-bottom: 12px;
+    }
+    .custom-input-group:focus-within {
+        border-color: var(--provider-color);
+        background: #ffffff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .custom-input, .custom-select {
+        border: none;
+        background: transparent;
+        padding: 12px 0;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+        color: #202124;
+    }
+    .btn-submit {
+        background: var(--provider-color);
+        color: #ffffff;
+        border: none;
+        border-radius: 30px;
+        padding: 12px;
+        font-weight: 600;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-submit:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        color: #ffffff;
+    }
+    .terms-text {
+        font-size: 0.78rem;
+        color: #70757a;
+        text-align: center;
+        margin-top: 30px;
+        line-height: 1.5;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="oauth-bg">
+    <div class="oauth-card">
+        <div class="oauth-header">
+            <div class="brand-logo">
+                {% if provider == 'google' %}
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 48px;">
+                {% elif provider == 'facebook' %}
+                <i class="fab fa-facebook-square" style="color: #1877F2; font-size: 54px;"></i>
+                {% else %}
+                <i class="fab fa-apple" style="color: #000000; font-size: 54px;"></i>
+                {% endif %}
+            </div>
+            <h3 class="oauth-title">
+                {% if selected_lang == 'hi' %}{{ provider_display }} के साथ साइन इन करें{% elif selected_lang == 'ne' %}{{ provider_display }} मार्फत साइन इन गर्नुहोस्{% else %}Sign in with {{ provider_display }}{% endif %}
+            </h3>
+            <p class="oauth-subtitle">
+                {% if selected_lang == 'hi' %}Kisaan Mandi पर जारी रखने के लिए{% elif selected_lang == 'ne' %}Kisaan Mandi मा अगाडी बढ्न{% else %}to continue to Kisaan Mandi{% endif %}
+            </p>
+        </div>
+
+        <!-- Pre-configured Mock Accounts for Quick Selection -->
+        <div id="quickSelectContainer">
+            <!-- Account 1: Rajesh Patel (Farmer) -->
+            <form method="post" action="{% url 'social_callback' provider %}">
+                {% csrf_token %}
+                <input type="hidden" name="email" value="rajesh.patel@gmail.com">
+                <input type="hidden" name="first_name" value="Rajesh">
+                <input type="hidden" name="last_name" value="Patel">
+                <input type="hidden" name="role" value="farmer">
+                <input type="hidden" name="phone" value="9876543210">
+                <input type="hidden" name="state" value="Karnataka">
+                <input type="hidden" name="district" value="Bengaluru Urban">
+                
+                <div class="identity-card" onclick="this.closest('form').submit()">
+                    <div class="identity-avatar">RP</div>
+                    <div class="identity-info">
+                        <div class="identity-name">Rajesh Patel</div>
+                        <div class="identity-email">rajesh.patel@gmail.com</div>
+                    </div>
+                    <span class="identity-role farmer">
+                        {% if selected_lang == 'hi' %}किसान{% elif selected_lang == 'ne' %}किसान{% else %}Farmer{% endif %}
+                    </span>
+                </div>
+            </form>
+
+            <!-- Account 2: Amit Verma (Buyer) -->
+            <form method="post" action="{% url 'social_callback' provider %}">
+                {% csrf_token %}
+                <input type="hidden" name="email" value="amit.verma@gmail.com">
+                <input type="hidden" name="first_name" value="Amit">
+                <input type="hidden" name="last_name" value="Verma">
+                <input type="hidden" name="role" value="buyer">
+                <input type="hidden" name="phone" value="9123456789">
+                <input type="hidden" name="state" value="Karnataka">
+                <input type="hidden" name="district" value="Mysuru">
+                
+                <div class="identity-card" onclick="this.closest('form').submit()">
+                    <div class="identity-avatar">AV</div>
+                    <div class="identity-info">
+                        <div class="identity-name">Amit Verma</div>
+                        <div class="identity-email">amit.verma@gmail.com</div>
+                    </div>
+                    <span class="identity-role">
+                        {% if selected_lang == 'hi' %}खरीदार{% elif selected_lang == 'ne' %}खरिदकर्ता{% else %}Buyer{% endif %}
+                    </span>
+                </div>
+            </form>
+
+            <a href="#" class="custom-form-toggle" onclick="toggleCustomForm(event)">
+                <i class="fas fa-user-plus me-1"></i>
+                {% if selected_lang == 'hi' %}दूसरे खाते का उपयोग करें{% elif selected_lang == 'ne' %}अर्को खाता प्रयोग गर्नुहोस्{% else %}Use another account{% endif %}
+            </a>
+        </div>
+
+        <!-- Custom Account Form (Initially Hidden) -->
+        <div id="customFormContainer" style="display: none;">
+            <form method="post" action="{% url 'social_callback' provider %}">
+                {% csrf_token %}
+                
+                <div class="custom-input-group">
+                    <input type="text" name="first_name" class="custom-input" placeholder="{% if selected_lang == 'hi' %}पहला नाम *{% elif selected_lang == 'ne' %}पहिलो नाम *{% else %}First Name *{% endif %}" required oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '')">
+                </div>
+                <div class="custom-input-group">
+                    <input type="text" name="last_name" class="custom-input" placeholder="{% if selected_lang == 'hi' %}अंतिम नाम *{% elif selected_lang == 'ne' %}थरनाम *{% else %}Last Name *{% endif %}" required oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '')">
+                </div>
+                <div class="custom-input-group">
+                    <input type="email" name="email" class="custom-input" placeholder="{% if selected_lang == 'hi' %}ईमेल *{% elif selected_lang == 'ne' %}इमेल *{% else %}Email Address *{% endif %}" required>
+                </div>
+                <div class="custom-input-group">
+                    <input type="text" name="phone" class="custom-input" placeholder="{% if selected_lang == 'hi' %}फ़ोन नंबर{% elif selected_lang == 'ne' %}फोन नम्बर{% else %}Phone Number{% endif %}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="15">
+                </div>
+                
+                <div class="custom-input-group">
+                    <select name="role" class="custom-select" required>
+                        <option value="buyer">🛒 {% if selected_lang == 'hi' %}खरीदार{% elif selected_lang == 'ne' %}खरिदकर्ता{% else %}Buyer{% endif %}</option>
+                        <option value="farmer">👨‍🌾 {% if selected_lang == 'hi' %}किसान{% elif selected_lang == 'ne' %}किसान{% else %}Farmer{% endif %}</option>
+                    </select>
+                </div>
+
+                <div class="custom-input-group">
+                    <select name="state" id="stateSelect" class="custom-select" onchange="updateDistricts()" required>
+                        <option value="">{% if selected_lang == 'hi' %}-- राज्य चुनें --{% elif selected_lang == 'ne' %}-- प्रदेश चुन्नुहोस् --{% else %}-- Select State --{% endif %}</option>
+                        <optgroup label="🇮🇳 India">
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        </optgroup>
+                        <optgroup label="🇳🇵 Nepal">
+                            <option value="Bagmati Province">Bagmati Province (3)</option>
+                            <option value="Gandaki Province">Gandaki Province (4)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="custom-input-group">
+                    <select name="district" id="districtSelect" class="custom-select" required>
+                        <option value="">{% if selected_lang == 'hi' %}-- जिला चुनें --{% elif selected_lang == 'ne' %}-- जिल्ला चुन्नुहोस् --{% else %}-- Select District --{% endif %}</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-submit w-100 mt-2">
+                    {% if selected_lang == 'hi' %}पुष्टि करें और जुड़ें{% elif selected_lang == 'ne' %}पुष्टि गर्नुहोस् र जडान गर्नुहोस्{% else %}Confirm & Connect Account{% endif %}
+                </button>
+
+                <a href="#" class="custom-form-toggle" onclick="toggleCustomForm(event)">
+                    <i class="fas fa-chevron-left me-1"></i>
+                    {% if selected_lang == 'hi' %}वापस जाएं{% elif selected_lang == 'ne' %}पछाडि जानुहोस्{% else %}Back to account list{% endif %}
+                </a>
+            </form>
+        </div>
+
+        <div class="terms-text">
+            To continue, {{ provider_display }} will share your name, email address, language preference, and profile picture with Kisaan Mandi. See our Privacy Policy and Terms of Service.
+        </div>
+    </div>
+</div>
+
+<script>
+    const districtData = {
+        "Karnataka": ["Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"],
+        "Andhra Pradesh": ["Anantapur", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Srikakulam", "Sri Potti Sriramulu Nellore", "Visakhapatnam", "Vizianagaram", "West Godavari", "YSR Kadapa"],
+        "Bihar": ["Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"],
+        "Maharashtra": ["Ahmednagar", "Akola", "Amravati", "Aurangabad", "Beed", "Bhandara", "Buldhana", "Chandrapur", "Dhule", "Gadchiroli", "Gondia", "Hingoli", "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur", "Nanded", "Nandurbar", "Nashik", "Osmanabad", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri", "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal"],
+        "Uttar Pradesh": ["Agra", "Aligarh", "Allahabad", "Ambedkar Nagar", "Amethi", "Amroha", "Auraiya", "Azamgarh", "Baghpat", "Bahraich", "Ballia", "Balrampur", "Banda", "Barabanki", "Bareilly", "Basti", "Bhadohi", "Bijnor", "Budaun", "Bulandshahr", "Chandauli", "Chitrakoot", "Deoria", "Etah", "Etawah", "Faizabad", "Farrukhabad", "Fatehpur", "Firozabad", "Gautam Buddha Nagar", "Ghaziabad", "Ghazipur", "Gonda", "Gorakhpur", "Hamirpur", "Hapur", "Hardoi", "Hathras", "Jalaun", "Jaunpur", "Jhansi", "Kannauj", "Kanpur Dehat", "Kanpur Nagar", "Kasganj", "Kaushambi", "Kheri", "Kushinagar", "Lalitpur", "Lucknow", "Maharajganj", "Mahoba", "Mainpuri", "Mathura", "Mau", "Meerut", "Mirzapur", "Moradabad", "Muzaffarnagar", "Pilibhit", "Pratapgarh", "RaeBareli", "Rampur", "Saharanpur", "Sambhal", "Sant Kabir Nagar", "Shahjahanpur", "Shamli", "Shravasti", "Siddharthnagar", "Sitapur", "Sonbhadra", "Sultanpur", "Unnao", "Varanasi"],
+        "Bagmati Province": ["Bhaktapur", "Chitwan", "Dhading", "Dolakha", "Kathmandu", "Kavrepalanchok", "Lalitpur", "Makwanpur", "Nuwakot", "Ramechhap", "Rasuwa", "Sindhuli", "Sindhupalchok"],
+        "Gandaki Province": ["Baglung", "Gorkha", "Kaski", "Lamjung", "Manang", "Mustang", "Myagdi", "Nawalpur", "Parbat", "Syangja", "Tanahun"]
+    };
+
+    function updateDistricts() {
+        const stateSelect = document.getElementById('stateSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const selectedState = stateSelect.value;
+        
+        districtSelect.innerHTML = '';
+        
+        if (!selectedState) {
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = "{% if selected_lang == 'hi' %}-- पहले राज्य चुनें --{% elif selected_lang == 'ne' %}-- पहिले प्रदेश चुन्नुहोस् --{% else %}-- Select State First --{% endif %}";
+            districtSelect.appendChild(defaultOpt);
+            return;
+        }
+        
+        const districts = districtData[selectedState] || [];
+        const selectOpt = document.createElement('option');
+        selectOpt.value = '';
+        selectOpt.textContent = "{% if selected_lang == 'hi' %}-- जिला चुनें --{% elif selected_lang == 'ne' %}-- जिल्ला चुन्नुहोस् --{% else %}-- Select District --{% endif %}";
+        districtSelect.appendChild(selectOpt);
+        
+        districts.forEach(function(district) {
+            const opt = document.createElement('option');
+            opt.value = district;
+            opt.textContent = district;
+            districtSelect.appendChild(opt);
+        });
+    }
+
+    function toggleCustomForm(event) {
+        event.preventDefault();
+        const quickSelect = document.getElementById('quickSelectContainer');
+        const customForm = document.getElementById('customFormContainer');
+        
+        if (quickSelect.style.display === 'none') {
+            quickSelect.style.display = 'block';
+            customForm.style.display = 'none';
+        } else {
+            quickSelect.style.display = 'none';
+            customForm.style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

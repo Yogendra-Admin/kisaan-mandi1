@@ -1,0 +1,53 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}Profile / प्रोफाइल / प्रोफाइल - Kisaan Mandi{% endblock %}
+{% block content %}
+<div class="container py-4">
+<div class="row justify-content-center">
+<div class="col-lg-7">
+<div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+    <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:30px;color:white;text-align:center;">
+        {% if user.profile_pic %}<img src="{{ user.profile_pic.url }}" class="rounded-circle mb-3" width="80" height="80" style="object-fit:cover;border:3px solid white;">
+        {% else %}<div style="font-size:4rem;">👤</div>{% endif %}
+        <h4 class="fw-bold">{{ user.get_full_name|default:user.username }}</h4>
+        <p class="mb-0" style="opacity:0.85">{{ user.get_role_display }} | {{ user.email }}</p>
+    </div>
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">Edit Profile / प्रोफाइल संपादित करें / प्रोफाइल सम्पादन</h5>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">First Name / नाम</label>{{ form.first_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Last Name / उपनाम / थर</label>{{ form.last_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>{{ form.email }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Phone / फोन</label>{{ form.phone }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">State/Province / राज्य / प्रदेश</label>{{ form.state }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">District / जिला / जिल्ला</label>{{ form.district }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Address / पता / ठेगाना</label>{{ form.address }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Profile Picture / फोटो</label>{{ form.profile_pic }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-kisaan mt-4 px-5">
+                <i class="fas fa-save me-2"></i>Save / सहेजें / सेभ गर्नुस्
+            </button>
+        </form>
+    </div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

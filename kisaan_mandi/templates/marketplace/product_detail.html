@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} - Kisaan Mandi{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">{% if selected_lang == 'hi' %}होम{% elif selected_lang == 'ne' %}होम{% else %}Home{% endif %}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product_list' %}">{% if selected_lang == 'hi' %}मंडी{% elif selected_lang == 'ne' %}बजार{% else %}Marketplace{% endif %}</a></li>
+            <li class="breadcrumb-item active">
+                {% if selected_lang == 'hi' %}{{ product.name_hi|default:product.name }}
+                {% elif selected_lang == 'ne' %}{{ product.name_ne|default:product.name }}
+                {% else %}{{ product.name }}{% endif %}
+            </li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="img-fluid rounded-4 shadow w-100" alt="{{ product.name }}" style="max-height:380px;object-fit:cover;">
+            {% elif product.product_image_url %}
+            <img src="{{ product.product_image_url }}" class="img-fluid rounded-4 shadow w-100" alt="{{ product.name }}" style="max-height:380px;object-fit:cover;">
+            {% else %}
+            <div class="img-placeholder rounded-4 shadow" style="height:320px;font-size:7rem;">{{ product.product_icon }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-7">
+            <div class="mb-2">
+                {% if product.is_organic %}<span class="badge bg-success me-2">🍃 {% if selected_lang == 'hi' %}जैविक{% elif selected_lang == 'ne' %}जैविक{% else %}Organic{% endif %}</span>{% endif %}
+                <span class="badge {% if product.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ product.status|upper }}</span>
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                {% if selected_lang == 'hi' %}{{ product.name_hi|default:product.name }}
+                {% elif selected_lang == 'ne' %}{{ product.name_ne|default:product.name }}
+                {% else %}{{ product.name }}{% endif %}
+            </h2>
+
+            <div class="d-flex align-items-baseline gap-2 mb-3 mt-2">
+                <h3 class="price-tag mb-0">₹{{ product.price_per_unit }}</h3>
+                <span class="text-muted">{% if selected_lang == 'hi' %}प्रति{% elif selected_lang == 'ne' %}प्रति{% else %}per{% endif %} {{ product.unit }}</span>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <small class="text-muted d-block">{% if selected_lang == 'hi' %}उपलब्ध{% elif selected_lang == 'ne' %}उपलब्ध{% else %}Available{% endif %}</small>
+                        <strong>{{ product.quantity_available }} {{ product.unit }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <small class="text-muted d-block">{% if selected_lang == 'hi' %}श्रेणी{% elif selected_lang == 'ne' %}श्रेणी{% else %}Category{% endif %}</small>
+                        <strong>{{ product.category.name|default:'General' }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <small class="text-muted d-block">{% if selected_lang == 'hi' %}स्थान{% elif selected_lang == 'ne' %}ठाउँ{% else %}Location{% endif %}</small>
+                        <strong>{{ product.location|default:product.state|default:'India/Nepal' }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <small class="text-muted d-block">{% if selected_lang == 'hi' %}सूचीबद्ध{% elif selected_lang == 'ne' %}सूचीकृत{% else %}Listed{% endif %}</small>
+                        <strong>{{ product.created_at|date:"d M Y" }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            {% if product.description %}<p class="text-muted mb-3">{{ product.description }}</p>{% endif %}
+
+            <div class="card border-0 bg-light rounded-3 p-3 mb-4">
+                <h6 class="fw-bold mb-2">{% if selected_lang == 'hi' %}विक्रेता{% elif selected_lang == 'ne' %}बिक्रेता{% else %}Seller{% endif %}</h6>
+                <p class="mb-1">👨‍🌾 <strong>{{ product.farmer.get_full_name|default:product.farmer.username }}</strong></p>
+                {% if product.farmer.state %}<p class="text-muted small mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ product.farmer.district }}, {{ product.farmer.state }}</p>{% endif %}
+                {% if product.farmer.phone %}<p class="text-muted small mb-0"><i class="fas fa-phone me-1"></i>{{ product.farmer.phone }}</p>{% endif %}
+            </div>
+
+            {% if product.status == 'active' %}
+                {% if user.is_authenticated %}
+                    {% if not user.is_farmer %}
+                    <form method="post" id="buyForm" class="mb-4">
+                        {% csrf_token %}
+                        <div class="card border-0 p-3 mb-3 rounded-4" style="background: rgba(241, 248, 243, 0.75); border: 1px solid rgba(45, 138, 98, 0.1) !important;">
+                            <label class="form-label fw-bold text-success mb-2" style="font-size: 0.95rem;">
+                                ⚖️ 
+                                {% if selected_lang == 'hi' %}खरीदारी मात्रा
+                                {% elif selected_lang == 'ne' %}खरिद मात्रा
+                                {% else %}Purchase Quantity
+                                {% endif %}
+                                ({{ product.unit }})
+                            </label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-outline-success btn-sm px-3 fw-bold rounded-3" onclick="adjustQty(-1)">-</button>
+                                <input type="number" name="quantity" id="detailQtyInput" class="form-control text-center fw-bold rounded-3 border-success-subtle" style="max-width: 100px; color: var(--green-dark);" value="1.0" step="0.1" min="0.1" max="{{ product.quantity_available }}">
+                                <button type="button" class="btn btn-outline-success btn-sm px-3 fw-bold rounded-3" onclick="adjustQty(1)">+</button>
+                                <span class="text-muted small ms-2">
+                                    {% if selected_lang == 'hi' %}अधिकतम:
+                                    {% elif selected_lang == 'ne' %}अधिकतम:
+                                    {% else %}Max:
+                                    {% endif %}
+                                    {{ product.quantity_available }} {{ product.unit }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <button type="button" onclick="submitBuyNow()" class="btn btn-orange btn-lg flex-grow-1 shadow-sm transition-all" style="border-radius: 12px;">
+                                <i class="fas fa-shopping-bag me-2"></i>
+                                {% if selected_lang == 'hi' %}अभी खरीदें{% elif selected_lang == 'ne' %}अहिले किन्नुस्{% else %}Buy Now{% endif %}
+                            </button>
+                            <button type="submit" formaction="{% url 'add_to_cart' product.pk %}" class="btn btn-kisaan btn-lg px-4 shadow-sm transition-all" style="border-radius: 12px;" title="Add to Cart">
+                                <i class="fas fa-cart-plus me-1"></i>
+                                {% if selected_lang == 'hi' %}कार्ट में जोड़ें{% elif selected_lang == 'ne' %}कार्टमा थप्नुहोस्{% else %}Add to Cart{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                    {% elif user == product.farmer %}
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'edit_product' product.pk %}" class="btn btn-kisaan">{% if selected_lang == 'hi' %}संपादित{% elif selected_lang == 'ne' %}सम्पादन{% else %}Edit{% endif %}</a>
+                        <form method="post" action="{% url 'delete_product' product.pk %}" onsubmit="return confirm('Delete this product?')">
+                            {% csrf_token %}<button class="btn btn-outline-danger">{% if selected_lang == 'hi' %}हटाएं{% elif selected_lang == 'ne' %}हटाउनुस्{% else %}Delete{% endif %}</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">{% if selected_lang == 'hi' %}केवल खरीदार उत्पाद खरीद सकते हैं।{% elif selected_lang == 'ne' %}केवल खरिदकर्ताले उत्पादन किन्न सक्छन्।{% else %}Only buyers can purchase products.{% endif %}</div>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-orange btn-lg w-100">
+                    {% if selected_lang == 'hi' %}खरीदने के लिए लॉगिन करें{% elif selected_lang == 'ne' %}किन्न लगइन गर्नुस्{% else %}Login to Buy{% endif %}
+                </a>
+                {% endif %}
+            {% else %}
+            <div class="alert alert-secondary">{% if selected_lang == 'hi' %}यह उत्पाद अब उपलब्ध नहीं है।{% elif selected_lang == 'ne' %}यो उत्पादन अब उपलब्ध छैन।{% else %}This product is no longer available.{% endif %}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="section-title fw-bold mb-4">
+                {% if selected_lang == 'hi' %}समीक्षाएँ{% elif selected_lang == 'ne' %}समीक्षाहरू{% else %}Reviews{% endif %}
+                {% if avg_rating %}<span class="badge bg-warning text-dark ms-2">⭐ {{ avg_rating|floatformat:1 }}/5</span>{% endif %}
+            </h4>
+            {% if user.is_authenticated and not user.is_farmer %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background:#f9fbe7;">
+                <h6 class="fw-bold mb-3">{% if selected_lang == 'hi' %}समीक्षा लिखें{% elif selected_lang == 'ne' %}समीक्षा लेख्नुस्{% else %}Write a Review{% endif %}</h6>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{% if selected_lang == 'hi' %}रेटिंग{% elif selected_lang == 'ne' %}रेटिंग{% else %}Rating{% endif %}</label>
+                        <select name="rating" class="form-select w-auto">
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ Good</option>
+                            <option value="3">⭐⭐⭐ Average</option>
+                            <option value="2">⭐⭐ Poor</option>
+                            <option value="1">⭐ Very Poor</option>
+                        </select>
+                    </div>
+                    <textarea name="comment" class="form-control mb-3" rows="3" placeholder="{% if selected_lang == 'hi' %}अपना अनुभव साझा करें...{% elif selected_lang == 'ne' %}आफ्नो अनुभव साझा गर्नुस्...{% else %}Share your experience...{% endif %}"></textarea>
+                    <button type="submit" class="btn btn-kisaan">{% if selected_lang == 'hi' %}सबमिट करें{% elif selected_lang == 'ne' %}पेश गर्नुस्{% else %}Submit{% endif %}</button>
+                </form>
+            </div>
+            {% endif %}
+            {% for review in reviews %}
+            <div class="card border-0 shadow-sm rounded-3 p-3 mb-3">
+                <div class="d-flex justify-content-between">
+                    <strong>{{ review.buyer.first_name|default:review.buyer.username }}</strong>
+                    <span class="text-warning">{% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}</span>
+                </div>
+                <p class="text-muted small mb-1">{{ review.created_at|date:"d M Y" }}</p>
+                {% if review.comment %}<p class="mb-0">{{ review.comment }}</p>{% endif %}
+            </div>
+            {% empty %}
+            <p class="text-muted">{% if selected_lang == 'hi' %}अभी कोई समीक्षा नहीं। पहले समीक्षा करें!{% elif selected_lang == 'ne' %}अहिले कुनै समीक्षा छैन। पहिलो हुनुस्!{% else %}No reviews yet. Be the first!{% endif %}</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function adjustQty(amt) {
+    const qtyInput = document.getElementById('detailQtyInput');
+    let val = parseFloat(qtyInput.value) || 1.0;
+    val += amt * 1.0;
+    if (val < 0.1) val = 0.1;
+    const maxVal = parseFloat("{{ product.quantity_available }}") || 1000.0;
+    if (val > maxVal) val = maxVal;
+    qtyInput.value = val.toFixed(1);
+}
+
+function submitBuyNow() {
+    const qty = document.getElementById('detailQtyInput').value;
+    window.location.href = "{% url 'place_order' product.pk %}?quantity=" + qty;
+}
+</script>
+{% endblock %}

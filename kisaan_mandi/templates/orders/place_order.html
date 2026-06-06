@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}
+    {% if selected_lang == 'hi' %}ऑर्डर दें
+    {% elif selected_lang == 'ne' %}अर्डर दिनुस्
+    {% else %}Place Order
+    {% endif %} - Kisaan Mandi
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+<div class="row justify-content-center">
+<div class="col-lg-9">
+    <h4 class="fw-bold mb-4">
+        🛒 
+        {% if selected_lang == 'hi' %}ऑर्डर दें
+        {% elif selected_lang == 'ne' %}अर्डर दिनुस्
+        {% else %}Place Order
+        {% endif %}
+    </h4>
+    <div class="row g-4">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm rounded-4">
+                {% if product.image %}<img src="{{ product.image.url }}" class="card-img-top rounded-top-4" alt="{{ product.name }}" style="height:200px;object-fit:cover;">
+                {% elif product.product_image_url %}<img src="{{ product.product_image_url }}" class="card-img-top rounded-top-4" alt="{{ product.name }}" style="height:200px;object-fit:cover;">
+                {% else %}<div class="img-placeholder rounded-top-4" style="height:180px;font-size:4rem;">{{ product.category.icon|default:'🌾' }}</div>{% endif %}
+                <div class="card-body">
+                    <h5 class="fw-bold mb-0">
+                        {% if selected_lang == 'hi' and product.name_hi %}{{ product.name_hi }}
+                        {% elif selected_lang == 'ne' and product.name_ne %}{{ product.name_ne }}
+                        {% else %}{{ product.name }}
+                        {% endif %}
+                    </h5>
+                    <p class="price-tag mb-1 mt-1">₹{{ product.price_per_unit }}/{{ product.unit }}</p>
+                    <p class="text-muted small mb-1">
+                        <i class="fas fa-box me-1"></i>
+                        {% if selected_lang == 'hi' %}उपलब्ध:
+                        {% elif selected_lang == 'ne' %}उपलब्ध:
+                        {% else %}Available:
+                        {% endif %} 
+                        {{ product.quantity_available }} {{ product.unit }}
+                    </p>
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-user me-1"></i>
+                        {{ product.farmer.get_full_name|default:product.farmer.username }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:20px;color:white;border-radius:16px 16px 0 0;">
+                    <h5 class="fw-bold mb-0">
+                        {% if selected_lang == 'hi' %}ऑर्डर विवरण
+                        {% elif selected_lang == 'ne' %}अर्डर विवरण
+                        {% else %}Order Details
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" id="orderForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                {% if selected_lang == 'hi' %}मात्रा
+                                {% elif selected_lang == 'ne' %}मात्रा
+                                {% else %}Quantity
+                                {% endif %} 
+                                ({{ product.unit }}) *
+                            </label>
+                            {{ form.quantity.errors }}
+                            <input type="number" name="quantity" class="form-control" step="0.1" min="0.1" max="{{ product.quantity_available }}" id="qtyInput" value="{{ form.quantity.value|default:'1.0' }}" required>
+                            <small class="text-muted">Max: {{ product.quantity_available }} {{ product.unit }}</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                {% if selected_lang == 'hi' %}कुल राशि
+                                {% elif selected_lang == 'ne' %}जम्मा रकम
+                                {% else %}Total Amount
+                                {% endif %}
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="text" class="form-control fw-bold text-success" id="totalDisplay" readonly placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                {% if selected_lang == 'hi' %}भुगतान विधि *
+                                {% elif selected_lang == 'ne' %}भुक्तानी विधि *
+                                {% else %}Payment Method *
+                                {% endif %}
+                            </label>
+                            {{ form.payment_method }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                {% if selected_lang == 'hi' %}डिलिवरी पता *
+                                {% elif selected_lang == 'ne' %}डेलिभरी ठेगाना *
+                                {% else %}Delivery Address *
+                                {% endif %}
+                            </label>
+                            {{ form.delivery_address.errors }}
+                            <textarea name="delivery_address" class="form-control" rows="3" required placeholder="{% if selected_lang == 'hi' %}पूरा पता दर्ज करें...{% elif selected_lang == 'ne' %}पूरा ठेगाना लेख्नुहोस्...{% else %}Full delivery address...{% endif %}">{{ form.delivery_address.value|default:'' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                {% if selected_lang == 'hi' %}टिप्पणी (वैकल्पिक)
+                                {% elif selected_lang == 'ne' %}टिप्पणी (वैकल्पिक)
+                                {% else %}Notes (Optional)
+                                {% endif %}
+                            </label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="{% if selected_lang == 'hi' %}कोई विशेष निर्देश...{% elif selected_lang == 'ne' %}कुनै विशेष निर्देशन...{% else %}Special instructions...{% endif %}"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-orange w-100 py-2">
+                            <i class="fas fa-check-circle me-2"></i>
+                            {% if selected_lang == 'hi' %}ऑर्डर की पुष्टि करें
+                            {% elif selected_lang == 'ne' %}अर्डर पुष्टि गर्नुस्
+                            {% else %}Confirm Order
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const price = parseFloat("{{ product.price_per_unit }}") || 0;
+const qtyInput = document.getElementById('qtyInput');
+const totalDisplay = document.getElementById('totalDisplay');
+function updateTotal() {
+    totalDisplay.value = (qtyInput.value * price).toFixed(2);
+}
+qtyInput.addEventListener('input', updateTotal);
+window.addEventListener('DOMContentLoaded', updateTotal);
+</script>
+{% endblock %}

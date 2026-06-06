@@ -1,0 +1,146 @@
+{% extends 'base_farmer.html' %}
+
+{% block title %}
+    {% if selected_lang == 'hi' %}बिक्री रिपोर्ट{% elif selected_lang == 'ne' %}बिक्री रिपोर्ट{% else %}Sales Report{% endif %} - Kisaan Mandi
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h3 class="fw-bold mb-4">📈 {% if selected_lang == 'hi' %}बिक्री रिपोर्ट{% elif selected_lang == 'ne' %}बिक्री रिपोर्ट{% else %}Sales Report{% endif %}</h3>
+    
+    <!-- Sales KPIs -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card dashboard-stat-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">
+                            {% if selected_lang == 'hi' %}कुल राजस्व{% elif selected_lang == 'ne' %}कुल राजस्व{% else %}Total Revenue{% endif %}
+                        </span>
+                        <h3 class="fw-bold mt-1 mb-0">₹{{ total_revenue|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-badge bg-success-subtle text-success">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-stat-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">
+                            {% if selected_lang == 'hi' %}औसत ऑर्डर मूल्य{% elif selected_lang == 'ne' %}औसत अर्डर मूल्य{% else %}Average Order Value{% endif %}
+                        </span>
+                        <h3 class="fw-bold mt-1 mb-0">₹{{ avg_order_value|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-badge bg-primary-subtle text-primary">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-stat-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">
+                            {% if selected_lang == 'hi' %}कुल मात्रा बेची गई{% elif selected_lang == 'ne' %}जम्मा मात्रा बिक्री भयो{% else %}Total Qty Sold{% endif %}
+                        </span>
+                        <h3 class="fw-bold mt-1 mb-0">{{ total_qty|floatformat:"-2" }}</h3>
+                    </div>
+                    <div class="stat-badge bg-warning-subtle text-warning">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Trends Chart (SVG) -->
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+        <h5 class="fw-bold mb-3">
+            {% if selected_lang == 'hi' %}बिक्री रुझान (अंतिम 6 महीने){% elif selected_lang == 'ne' %}बिक्री प्रवृति (अन्तिम ६ महिना){% else %}Sales Trends (Last 6 Months){% endif %}
+        </h5>
+        
+        <div class="d-flex justify-content-center bg-white p-3 rounded border">
+            <!-- Inline SVG chart -->
+            <svg viewBox="0 0 600 270" width="100%" height="270" style="max-width:600px;">
+                <!-- Grid Lines -->
+                <line x1="50" y1="40" x2="550" y2="40" stroke="#f0f0f0" stroke-width="1" />
+                <line x1="50" y1="130" x2="550" y2="130" stroke="#f0f0f0" stroke-width="1" />
+                <line x1="50" y1="220" x2="550" y2="220" stroke="#cccccc" stroke-width="1.5" />
+                
+                <!-- Y-Axis labels -->
+                <text x="40" y="45" font-size="10" fill="#888888" text-anchor="end">₹{{ max_total|floatformat:0 }}</text>
+                <text x="40" y="135" font-size="10" fill="#888888" text-anchor="end">₹{{ max_total|dictsort:"total"|first|default:0|floatformat:0 }}</text>
+                <text x="40" y="225" font-size="10" fill="#888888" text-anchor="end">₹0</text>
+                
+                <!-- Trend line -->
+                <polyline fill="none" stroke="var(--green-mid)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="{{ svg_points }}" />
+                
+                <!-- Data Points & Labels -->
+                {% for item in sales_data %}
+                <circle cx="{{ item.x }}" cy="{{ item.y }}" r="6" fill="#1a5c2a" stroke="#ffffff" stroke-width="2" />
+                
+                <!-- Amount Label above point -->
+                <text x="{{ item.x }}" y="{{ item.y|add:-12 }}" font-size="10" font-weight="700" fill="#333333" text-anchor="middle">₹{{ item.total|floatformat:0 }}</text>
+                
+                <!-- Month Label on X axis -->
+                <text x="{{ item.x }}" y="245" font-size="11" font-weight="600" fill="#555555" text-anchor="middle">{{ item.month }}</text>
+                {% endfor %}
+            </svg>
+        </div>
+    </div>
+
+    <!-- Sales Order Details -->
+    <div class="card border-0 shadow-sm rounded-3 p-4">
+        <h5 class="fw-bold mb-3">
+            {% if selected_lang == 'hi' %}सफल बिक्री विवरण{% elif selected_lang == 'ne' %}सफल बिक्री विवरण{% else %}Completed Sales Log{% endif %}
+        </h5>
+        
+        <div class="table-responsive">
+            <table class="table premium-table align-middle m-0" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Buyer</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Revenue</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><span class="fw-bold text-success">#ORD{{ order.id }}</span></td>
+                        <td>{{ order.buyer.get_full_name|default:order.buyer.username }}</td>
+                        <td>
+                            <strong>
+                                {% if selected_lang == 'hi' and order.product.name_hi %}{{ order.product.name_hi }}
+                                {% elif selected_lang == 'ne' and order.product.name_ne %}{{ order.product.name_ne }}
+                                {% else %}{{ order.product.name }}{% endif %}
+                            </strong>
+                        </td>
+                        <td>{{ order.quantity }} {{ order.product.unit }}</td>
+                        <td class="fw-bold text-success">₹{{ order.total_price }}</td>
+                        <td>
+                            <span class="badge status-{{ order.status }} rounded-pill px-3 py-1">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-muted small">{{ order.updated_at|date:"d M Y, h:i A" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No completed sales recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

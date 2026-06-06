@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}{% if selected_lang == 'hi' %}मंडी भाव{% elif selected_lang == 'ne' %}बजार मूल्य{% else %}Mandi Prices{% endif %} - Kisaan Mandi{% endblock %}
+{% block content %}
+<div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:white;padding:40px 0 30px;">
+    <div class="container">
+        <h2 class="fw-bold mb-1">📊 {% if selected_lang == 'hi' %}मंडी भाव{% elif selected_lang == 'ne' %}बजार मूल्य{% else %}Mandi Rates{% endif %}</h2>
+        <p style="opacity:0.85" class="mb-3">
+            {% if selected_lang == 'hi' %}ताज़ा बाजार मूल्य{% elif selected_lang == 'ne' %}ताजा बजार मूल्य{% else %}Live market prices{% endif %}
+        </p>
+        <form method="get" class="row g-2">
+            <div class="col-md-4">
+                <input type="text" name="crop" class="form-control" placeholder="{% if selected_lang == 'hi' %}फसल खोजें...{% elif selected_lang == 'ne' %}बाली खोज्नुस्...{% else %}Search crop...{% endif %}" value="{{ crop }}">
+            </div>
+            <div class="col-md-3">
+                <select name="state" class="form-select">
+                    <option value="">{% if selected_lang == 'hi' %}सभी राज्य{% elif selected_lang == 'ne' %}सबै प्रदेश{% else %}All States{% endif %}</option>
+                    {% for s in states %}<option {% if s == state %}selected{% endif %}>{{ s }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-orange w-100">{% if selected_lang == 'hi' %}फ़िल्टर{% elif selected_lang == 'ne' %}फिल्टर{% else %}Filter{% endif %}</button>
+            </div>
+            {% if user.is_superuser or user.role == 'admin' %}
+            <div class="col-md-3">
+                <a href="{% url 'add_price' %}" class="btn btn-light w-100">+ {% if selected_lang == 'hi' %}भाव जोड़ें{% elif selected_lang == 'ne' %}मूल्य थप्नुस्{% else %}Add Price{% endif %}</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="table-responsive">
+        <table class="table table-hover bg-white rounded-3 overflow-hidden shadow">
+            <thead style="background:var(--green-dark);color:white;">
+                <tr>
+                    <th>{% if selected_lang == 'hi' %}फसल{% elif selected_lang == 'ne' %}बाली{% else %}Crop{% endif %}</th>
+                    <th>{% if selected_lang == 'hi' %}मंडी{% elif selected_lang == 'ne' %}मण्डी{% else %}Mandi{% endif %}</th>
+                    <th>{% if selected_lang == 'hi' %}राज्य{% elif selected_lang == 'ne' %}प्रदेश{% else %}State{% endif %}</th>
+                    <th>Min ₹</th>
+                    <th>Max ₹</th>
+                    <th>Modal ₹</th>
+                    <th>{% if selected_lang == 'hi' %}इकाई{% elif selected_lang == 'ne' %}इकाई{% else %}Unit{% endif %}</th>
+                    <th>{% if selected_lang == 'hi' %}तारीख{% elif selected_lang == 'ne' %}मिति{% else %}Date{% endif %}</th>
+                    <th>{% if selected_lang == 'hi' %}रुझान{% elif selected_lang == 'ne' %}प्रवृत्ति{% else %}Trend{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in prices %}
+                <tr>
+                    <td>
+                        <strong>
+                            {% if selected_lang == 'hi' %}{{ p.crop_name_hi|default:p.crop_name }}
+                            {% elif selected_lang == 'ne' %}{{ p.crop_name_ne|default:p.crop_name }}
+                            {% else %}{{ p.crop_name }}{% endif %}
+                        </strong>
+                    </td>
+                    <td>{{ p.mandi_name }}</td>
+                    <td>{{ p.state }}</td>
+                    <td>₹{{ p.min_price }}</td>
+                    <td>₹{{ p.max_price }}</td>
+                    <td><strong>₹{{ p.modal_price }}</strong></td>
+                    <td>{{ p.unit }}</td>
+                    <td>{{ p.date|date:"d M Y" }}</td>
+                    <td>
+                        {% if p.trend == 'up' %}<span class="price-up fw-bold">▲ {% if selected_lang == 'hi' %}ऊपर{% elif selected_lang == 'ne' %}माथि{% else %}Up{% endif %}</span>
+                        {% elif p.trend == 'down' %}<span class="price-down fw-bold">▼ {% if selected_lang == 'hi' %}नीचे{% elif selected_lang == 'ne' %}तल{% else %}Down{% endif %}</span>
+                        {% else %}<span class="price-stable fw-bold">━ {% if selected_lang == 'hi' %}स्थिर{% elif selected_lang == 'ne' %}स्थिर{% else %}Stable{% endif %}</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        <div style="font-size:3rem;">📊</div>
+                        <p class="mt-2">{% if selected_lang == 'hi' %}अभी कोई भाव उपलब्ध नहीं{% elif selected_lang == 'ne' %}अहिले कुनै मूल्य उपलब्ध छैन{% else %}No prices available yet{% endif %}</p>
+                        {% if user.is_superuser %}<a href="{% url 'add_price' %}" class="btn btn-kisaan btn-sm">{% if selected_lang == 'hi' %}पहला भाव जोड़ें{% else %}Add First Price{% endif %}</a>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

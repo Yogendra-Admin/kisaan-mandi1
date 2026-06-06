@@ -1,0 +1,621 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Register / पंजीकरण - Kisaan Mandi{% endblock %}
+{% block navbar %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium authentication styles */
+    .auth-bg {
+        background: linear-gradient(135deg, #59603a 0%, #353b1b 100%);
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 0;
+    }
+    .auth-container {
+        width: 560px;
+        max-width: 95%;
+        background: #ffffff;
+        border-radius: 30px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        overflow: hidden;
+        display: flex;
+        min-height: 580px;
+    }
+    .auth-sidebar {
+        width: 45%;
+        background-size: cover;
+        background-position: center;
+        padding: 45px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+    }
+    .auth-sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(22, 125, 70, 0.45) 0%, rgba(53, 59, 27, 0.85) 100%);
+        z-index: 1;
+    }
+    .sidebar-content {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .sidebar-logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .sidebar-body {
+        margin-top: auto;
+        margin-bottom: 2rem;
+    }
+    .sidebar-title {
+        font-size: 2.3rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 15px;
+    }
+    .sidebar-text {
+        font-size: 0.95rem;
+        opacity: 0.92;
+        line-height: 1.6;
+    }
+    .sidebar-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 1.5rem;
+    }
+    .btn-sidebar-in {
+        background: #167d46 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 30px !important;
+        padding: 12px 25px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s !important;
+        text-align: center;
+        text-decoration: none;
+    }
+    .btn-sidebar-in:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(22,125,70,0.4);
+    }
+    .btn-sidebar-up {
+        background: #c18f50 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 30px !important;
+        padding: 12px 25px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s !important;
+        text-align: center;
+        text-decoration: none;
+    }
+    .btn-sidebar-up:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(193,143,80,0.4);
+    }
+    .auth-form-container {
+        width: 100%;
+        padding: 50px 55px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #ffffff;
+    }
+    .form-header {
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .form-plant-icon {
+        font-size: 2.2rem;
+        color: #167d46;
+        margin-bottom: 5px;
+    }
+    .form-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #212529;
+        margin-bottom: 3px;
+    }
+    .form-subtitle {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .custom-input-group {
+        position: relative;
+        background: #eaf0eb;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        padding: 0px 12px;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    .custom-input-group:focus-within {
+        border-color: #167d46;
+        background: #ffffff;
+        box-shadow: 0 0 10px rgba(22,125,70,0.08);
+    }
+    .input-icon {
+        color: #6d7570;
+        font-size: 1rem;
+        margin-right: 10px;
+    }
+    .custom-input {
+        border: none;
+        background: transparent;
+        padding: 10px 0;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+        color: #212529;
+    }
+    .custom-input::placeholder {
+        color: #adb5bd;
+    }
+    .custom-select {
+        border: none;
+        background: transparent;
+        padding: 10px 0;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+        color: #212529;
+        cursor: pointer;
+    }
+    .btn-auth-submit {
+        background: linear-gradient(135deg, #167d46, #126b3a);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        padding: 11px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(22,125,70,0.2);
+    }
+    .btn-auth-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(22,125,70,0.3);
+        color: white;
+    }
+    .or-divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #888;
+        font-size: 0.72rem;
+        margin: 15px 0;
+        text-transform: lowercase;
+        letter-spacing: 0.5px;
+    }
+    .or-divider::before, .or-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #eaeaea;
+    }
+    .or-divider:not(:empty)::before {
+        margin-right: 10px;
+    }
+    .or-divider:not(:empty)::after {
+        margin-left: 10px;
+    }
+    .toggle-password-icon {
+        cursor: pointer;
+        color: #6d7570;
+        padding: 5px;
+        transition: color 0.2s;
+    }
+    .toggle-password-icon:hover {
+        color: #167d46;
+    }
+    .scrollable-auth-form {
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 10px;
+        margin-bottom: 15px;
+    }
+    .scrollable-auth-form::-webkit-scrollbar {
+        width: 6px;
+    }
+    .scrollable-auth-form::-webkit-scrollbar-track {
+        background: #f5f5f5;
+        border-radius: 10px;
+    }
+    .scrollable-auth-form::-webkit-scrollbar-thumb {
+        background: #c8e6c9;
+        border-radius: 10px;
+    }
+    .scrollable-auth-form::-webkit-scrollbar-thumb:hover {
+        background: #a5d6a7;
+    }
+    .social-icons-wrapper {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 12px 0;
+    }
+    .social-icon-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid #dee2e6;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .social-icon-btn:hover {
+        background: #f8f9fa;
+        transform: scale(1.08);
+    }
+    @media (max-width: 768px) {
+        .auth-container {
+            flex-direction: column;
+            border-radius: 20px;
+        }
+        .auth-sidebar {
+            width: 100%;
+            min-height: 220px;
+            padding: 30px;
+        }
+        .auth-form-container {
+            width: 100%;
+            padding: 30px 20px;
+        }
+        .sidebar-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-bg">
+    <div class="auth-container">
+        <!-- Form only (no sidebar) -->
+        <div class="auth-form-container">
+            <div class="form-header">
+                <div class="form-plant-icon">🌱</div>
+                <h3 class="form-title">
+                    {% if selected_lang == 'hi' %}खाता बनाएं{% elif selected_lang == 'ne' %}खाता खोल्नुस्{% else %}Sign Up{% endif %}
+                </h3>
+                <p class="form-subtitle">
+                    {% if selected_lang == 'hi' %}अपना नया खाता बनाएं{% elif selected_lang == 'ne' %}नया खाता खोल्नुहोस्{% else %}Create your new account{% endif %}
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'register' %}">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger py-2 px-3 rounded-4 mb-3 small border-0 shadow-sm">
+                        <div class="fw-bold mb-1"><i class="fas fa-exclamation-circle me-1"></i> {% if selected_lang == 'hi' %}कृपया त्रुटियों को सुधारें:{% elif selected_lang == 'ne' %}कृपया त्रुटिहरू सच्याउनुहोस्:{% else %}Please correct the errors below:{% endif %}</div>
+                        {% if form.non_field_errors %}
+                            <ul class="mb-0 ps-3">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="scrollable-auth-form">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}यूजरनाम *{% elif selected_lang == 'ne' %}यूजरनाम *{% else %}Username *{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" name="username" class="custom-input" placeholder="username123" required value="{{ form.username.value|default:'' }}" oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')">
+                            </div>
+                            <div class="text-muted" style="font-size: 0.72rem; margin-top: 3px; line-height: 1.2;">
+                                {% if selected_lang == 'hi' %}कम से कम एक अक्षर होना चाहिए (अंक वैकल्पिक हैं)।
+                                {% elif selected_lang == 'ne' %}कम्तिमा एउटा अक्षर हुनुपर्छ (अंकहरू वैकल्पिक हुन्)।
+                                {% else %}Must contain at least one alphabet character (numbers are optional).
+                                {% endif %}
+                            </div>
+                            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}ईमेल *{% elif selected_lang == 'ne' %}ईमेल *{% else %}Email *{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" name="email" class="custom-input" placeholder="user@gmail.com" required value="{{ form.email.value|default:'' }}">
+                            </div>
+                            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}पहला नाम{% elif selected_lang == 'ne' %}पहिलो नाम{% else %}First Name{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-id-card input-icon"></i>
+                                <input type="text" name="first_name" class="custom-input" placeholder="First Name" value="{{ form.first_name.value|default:'' }}" oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '')">
+                            </div>
+                            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}अंतिम नाम{% elif selected_lang == 'ne' %}थरनाम{% else %}Last Name{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-id-card input-icon"></i>
+                                <input type="text" name="last_name" class="custom-input" placeholder="Last Name" value="{{ form.last_name.value|default:'' }}" oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '')">
+                            </div>
+                            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}फ़ोन *{% elif selected_lang == 'ne' %}फोन *{% else %}Phone *{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input type="text" name="phone" class="custom-input" placeholder="Mobile number" required value="{{ form.phone.value|default:'' }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="10">
+                            </div>
+                            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}मैं हूं... *{% elif selected_lang == 'ne' %}मैं... *{% else %}I am a... *{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-users input-icon"></i>
+                                <select name="role" class="custom-select">
+                                    <option value="buyer" {% if form.role.value == 'buyer' %}selected{% endif %}>
+                                        🛒 {% if selected_lang == 'hi' %}खरीदार{% elif selected_lang == 'ne' %}खरिदकर्ता{% else %}Buyer{% endif %}
+                                    </option>
+                                    <option value="farmer" {% if form.role.value == 'farmer' %}selected{% endif %}>
+                                        👨‍🌾 {% if selected_lang == 'hi' %}किसान{% elif selected_lang == 'ne' %}किसान{% else %}Farmer{% endif %}
+                                    </option>
+                                </select>
+                            </div>
+                            {% if form.role.errors %}<div class="text-danger small mt-1">{{ form.role.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">
+                                {% if selected_lang == 'hi' %}राज्य{% elif selected_lang == 'ne' %}प्रदेश{% else %}State{% endif %}
+                            </label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-map-marker-alt input-icon"></i>
+                                <select name="state" id="stateSelect" class="custom-select" onchange="updateDistricts()" required>
+                                    <option value="">
+                                        {% if selected_lang == 'hi' %}-- राज्य चुनें --{% elif selected_lang == 'ne' %}-- प्रदेश चुन्नुहोस् --{% else %}-- Select State --{% endif %}
+                                    </option>
+                                    <!-- India -->
+                                    <optgroup label="🇮🇳 India">
+                                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                        <option value="Assam">Assam</option>
+                                        <option value="Bihar">Bihar</option>
+                                        <option value="Chhattisgarh">Chhattisgarh</option>
+                                        <option value="Goa">Goa</option>
+                                        <option value="Gujarat">Gujarat</option>
+                                        <option value="Haryana">Haryana</option>
+                                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                        <option value="Jharkhand">Jharkhand</option>
+                                        <option value="Karnataka">Karnataka</option>
+                                        <option value="Kerala">Kerala</option>
+                                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                        <option value="Maharashtra">Maharashtra</option>
+                                        <option value="Manipur">Manipur</option>
+                                        <option value="Meghalaya">Meghalaya</option>
+                                        <option value="Mizoram">Mizoram</option>
+                                        <option value="Nagaland">Nagaland</option>
+                                        <option value="Odisha">Odisha</option>
+                                        <option value="Punjab">Punjab</option>
+                                        <option value="Rajasthan">Rajasthan</option>
+                                        <option value="Sikkim">Sikkim</option>
+                                        <option value="Tamil Nadu">Tamil Nadu</option>
+                                        <option value="Telangana">Telangana</option>
+                                        <option value="Tripura">Tripura</option>
+                                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                        <option value="Uttarakhand">Uttarakhand</option>
+                                        <option value="West Bengal">West Bengal</option>
+                                        <option value="Delhi">Delhi (NCT)</option>
+                                        <option value="Jammu and Kashmir">Jammu &amp; Kashmir</option>
+                                        <option value="Ladakh">Ladakh</option>
+                                    </optgroup>
+                                    <!-- Nepal -->
+                                    <optgroup label="🇳🇵 Nepal">
+                                        <option value="Koshi Province">Koshi Province (1)</option>
+                                        <option value="Madhesh Province">Madhesh Province (2)</option>
+                                        <option value="Bagmati Province">Bagmati Province (3)</option>
+                                        <option value="Gandaki Province">Gandaki Province (4)</option>
+                                        <option value="Lumbini Province">Lumbini Province (5)</option>
+                                        <option value="Karnali Province">Karnali Province (6)</option>
+                                        <option value="Sudurpashchim Province">Sudurpashchim Province (7)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            {% if form.state.errors %}<div class="text-danger small mt-1">{{ form.state.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">
+                                {% if selected_lang == 'hi' %}जिला{% elif selected_lang == 'ne' %}जिल्ला{% else %}District{% endif %}
+                            </label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-map input-icon"></i>
+                                <select name="district" id="districtSelect" class="custom-select">
+                                    <option value="">
+                                        {% if selected_lang == 'hi' %}-- पहले राज्य चुनें --{% elif selected_lang == 'ne' %}-- पहिले प्रदेश चुन्नुहोस् --{% else %}-- Select State First --{% endif %}
+                                    </option>
+                                </select>
+                            </div>
+                            {% if form.district.errors %}<div class="text-danger small mt-1">{{ form.district.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}पासवर्ड *{% elif selected_lang == 'ne' %}पासवर्ड *{% else %}Password *{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" name="password1" id="regPassword1" class="custom-input" placeholder="••••••••" required>
+                                <i class="fas fa-eye-slash toggle-password-icon" onclick="togglePasswordVisibility('regPassword1', this)"></i>
+                            </div>
+                            <div class="text-muted" style="font-size: 0.72rem; margin-top: 3px; line-height: 1.2;">
+                                {% if selected_lang == 'hi' %}कम से कम 8 वर्ण, जिसमें बड़े और छोटे अक्षर, अंक और विशेष वर्ण होने चाहिए।
+                                {% elif selected_lang == 'ne' %}कम्तिमा ८ अक्षर, जसमा ठूलो र सानो अक्षर, अंक र विशेष क्यारेक्टर हुनुपर्छ।
+                                {% else %}At least 8 characters, containing uppercase, lowercase, numbers, and special characters.
+                                {% endif %}
+                            </div>
+                            {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-1">{% if selected_lang == 'hi' %}पासवर्ड पुष्टि करें *{% elif selected_lang == 'ne' %}पासवर्ड पुष्टि गर्नुस् *{% else %}Confirm Password *{% endif %}</label>
+                            <div class="custom-input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" name="password2" id="regPassword2" class="custom-input" placeholder="••••••••" required>
+                                <i class="fas fa-eye-slash toggle-password-icon" onclick="togglePasswordVisibility('regPassword2', this)"></i>
+                            </div>
+                            {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="agreeTerms" required checked>
+                    <label class="form-check-label text-muted small fw-semibold" for="agreeTerms">
+                        By signing you agree to our terms of use and privacy notice
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-auth-submit w-100 mb-3">
+                    <i class="fas fa-user-plus me-2"></i>{% if selected_lang == 'hi' %}खाता बनाएं{% elif selected_lang == 'ne' %}दर्ता गर्नुहोस्{% else %}Sign Up{% endif %}
+                </button>
+            </form>
+
+            <div class="or-divider">{% if selected_lang == 'hi' %}या इसके साथ पंजीकरण करें{% elif selected_lang == 'ne' %}अथवा यसबाट दर्ता गर्नुहोस्{% else %}or signup with{% endif %}</div>
+
+            <div class="social-icons-wrapper">
+                <a href="{% url 'social_login' 'google' %}" class="social-icon-btn"><i class="fab fa-google text-danger"></i></a>
+                <a href="{% url 'social_login' 'facebook' %}" class="social-icon-btn"><i class="fab fa-facebook-f text-primary"></i></a>
+                <a href="{% url 'social_login' 'apple' %}" class="social-icon-btn"><i class="fab fa-apple text-dark"></i></a>
+            </div>
+
+            <div class="text-center text-muted small fw-semibold mt-2">
+                Already have an account? <a href="{% url 'login' %}" class="text-success fw-bold text-decoration-none">{% if selected_lang == 'hi' %}लॉगिन{% elif selected_lang == 'ne' %}लगइन{% else %}Login{% endif %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const districtData = {
+        "Andhra Pradesh": ["Anantapur", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Srikakulam", "Sri Potti Sriramulu Nellore", "Visakhapatnam", "Vizianagaram", "West Godavari", "YSR Kadapa"],
+        "Arunachal Pradesh": ["Tawang", "West Kameng", "East Kameng", "Papum Pare", "Kurung Kumey", "Kra Daadi", "Lower Subansiri", "Upper Subansiri", "West Siang", "East Siang", "Siang", "Upper Siang", "Lower Siang", "Lower Dibang Valley", "Dibang Valley", "Anjaw", "Lohit", "Namsai", "Changlang", "Tirap", "Longding"],
+        "Assam": ["Baksa", "Barpeta", "Biswanath", "Bongaigaon", "Cachar", "Charaideo", "Chirang", "Darrang", "Dhemaji", "Dhubri", "Dibrugarh", "Dima Hasao", "Goalpara", "Golaghat", "Hailakandi", "Hojai", "Jorhat", "Kamrup Metropolitan", "Kamrup", "Karbi Anglong", "Karimganj", "Kokrajhar", "Lakhimpur", "Majuli", "Morigaon", "Nagaon", "Nalbari", "Sivasagar", "Sonitpur", "South Salmara-Mankachar", "Tinsukia", "Udalguri", "West Karbi Anglong"],
+        "Bihar": ["Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"],
+        "Chhattisgarh": ["Balod", "Baloda Bazar", "Balrampur", "Bastar", "Bemetara", "Bijapur", "Bilaspur", "Dantewada", "Dhamtari", "Durg", "Gariaband", "Janjgir-Champa", "Jashpur", "Kabirdham", "Kanker", "Kondagaon", "Korba", "Korea", "Mahasamund", "Mungeli", "Narayanpur", "Raigarh", "Raipur", "Rajnandgaon", "Sukma", "Surajpur", "Surguja"],
+        "Goa": ["North Goa", "South Goa"],
+        "Gujarat": ["Ahmedabad", "Amreli", "Anand", "Aravalli", "Banaskantha", "Bharuch", "Bhavnagar", "Botad", "Chhota Udepur", "Dahod", "Dangs", "Devbhoomi Dwarka", "Gandhinagar", "Gir Somnath", "Jamnagar", "Junagadh", "Kutch", "Kheda", "Mahisagar", "Mehsana", "Morbi", "Narmada", "Navsari", "Panchmahal", "Patan", "Porbandar", "Rajkot", "Sabarkantha", "Surat", "Surendranagar", "Tapi", "Vadodara", "Valsad"],
+        "Haryana": ["Ambala", "Bhiwani", "Charkhi Dadri", "Faridabad", "Fatehabad", "Gurugram", "Hisar", "Jhajjar", "Jind", "Kaithal", "Karnal", "Kurukshetra", "Mahendragarh", "Nuh", "Palwal", "Panchkula", "Panipat", "Rewari", "Rohtak", "Sirsa", "Sonipat", "Yamunanagar"],
+        "Himachal Pradesh": ["Bilaspur", "Chamba", "Hamirpur", "Kangra", "Kinnaur", "Kullu", "Lahaul and Spiti", "Mandi", "Shimla", "Sirmaur", "Solan", "Una"],
+        "Jharkhand": ["Bokaro", "Chatra", "Deoghar", "Dhanbad", "Dumka", "East Singhbhum", "Garhwa", "Giridih", "Godda", "Gumla", "Hazaribagh", "Jamtara", "Khunti", "Koderma", "Latehar", "Lohardaga", "Pakur", "Palamu", "Ramgarh", "Ranchi", "Sahibganj", "Seraikela Kharsawan", "Simdega", "West Singhbhum"],
+        "Karnataka": ["Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"],
+        "Kerala": ["Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode", "Malappuram", "Palakkad", "Pathanamthitta", "Thiruvananthapuram", "Trissur", "Wayanad"],
+        "Madhya Pradesh": ["Agar Malwa", "Alirajpur", "Anuppur", "Ashoknagar", "Balaghat", "Barwani", "Betul", "Bhind", "Bhopal", "Burhanpur", "Chhatarpur", "Chhindwara", "Damoh", "Datia", "Dewas", "Dhar", "Dindori", "Guna", "Gwalior", "Harda", "Narmadapuram", "Indore", "Jabalpur", "Jhabua", "Katni", "Khandwa", "Khargone", "Mandla", "Mandsaur", "Morena", "Narsinghpur", "Neemuch", "Panna", "Raisen", "Rajgarh", "Ratlam", "Rewa", "Sagar", "Satna", "Sehore", "Seoni", "Shahdol", "Shajapur", "Sheopur", "Shivpuri", "Sidhi", "Singrauli", "Tikamgarh", "Ujjain", "Umaria", "Vidisha"],
+        "Maharashtra": ["Ahmednagar", "Akola", "Amravati", "Aurangabad", "Beed", "Bhandara", "Buldhana", "Chandrapur", "Dhule", "Gadchiroli", "Gondia", "Hingoli", "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur", "Nanded", "Nandurbar", "Nashik", "Osmanabad", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri", "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal"],
+        "Manipur": ["Bishnupur", "Chandel", "Churachandpur", "Imphal East", "Imphal West", "Jiribam", "Kakching", "Kamjong", "Kangpokpi", "Noney", "Pherzawl", "Senapati", "Tamenglong", "Tengnoupal", "Thoubal", "Ukhrul"],
+        "Meghalaya": ["East Garo Hills", "East Jaintia Hills", "East Khasi Hills", "North Garo Hills", "Ri Bhoi", "South Garo Hills", "South West Garo Hills", "South West Khasi Hills", "West Garo Hills", "West Jaintia Hills", "West Khasi Hills"],
+        "Mizoram": ["Aizawl", "Champhai", "Kolasib", "Lawngtlai", "Lunglei", "Mamit", "Saiha", "Serchhip"],
+        "Nagaland": ["Dimapur", "Kiphire", "Kohima", "Longleng", "Mokokchung", "Mon", "Peren", "Phek", "Tuensang", "Wokha", "Zunheboto"],
+        "Odisha": ["Angul", "Balangir", "Balasore", "Bargarh", "Bhadrak", "Boudh", "Cuttack", "Deogarh", "Dhenkanal", "Gajapati", "Ganjam", "Jagatsinghpur", "Jajpur", "Jharsuguda", "Kalahandi", "Kandhamal", "Kendrapara", "Kendujhar", "Khordha", "Koraput", "Malkangiri", "Mayurbhanj", "Nabarangpur", "Nayagarh", "Nuapada", "Puri", "Rayagada", "Sambalpur", "Sonepur", "Sundargarh"],
+        "Punjab": ["Amritsar", "Barnala", "Bathinda", "Faridkot", "Fatehgarh Sahib", "Fazilka", "Ferozepur", "Gurdaspur", "Hoshiarpur", "Jalandhar", "Kapurthala", "Ludhiana", "Mansa", "Moga", "Muktsar", "Pathankot", "Patiala", "Rupnagar", "Sahibzada Ajit Singh Nagar", "Sangrur", "Shahid Bhagat Singh Nagar", "Tarn Taran"],
+        "Rajasthan": ["Ajmer", "Alwar", "Banswara", "Baran", "Barmer", "Bharatpur", "Bhilwara", "Bikaner", "Bundi", "Chittorgarh", "Churu", "Dausa", "Dholpur", "Dungarpur", "Hanumangarh", "Jaipur", "Jaisalmer", "Jalore", "Jhalawar", "Jhunjhunu", "Jodhpur", "Karauli", "Kota", "Nagaur", "Pali", "Pratapgarh", "Rajsamand", "Sawai Madhopur", "Sikar", "Sirohi", "Sri Ganganagar", "Tonk", "Udaipur"],
+        "Sikkim": ["East Sikkim", "North Sikkim", "South Sikkim", "West Sikkim"],
+        "Tamil Nadu": ["Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram", "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", "Ramanathapuram", "Ranipet", "Salem", "Sivaganga", "Tenkasi", "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar"],
+        "Telangana": ["Adilabad", "Bhadradri Kothagudem", "Hyderabad", "Jagtial", "Jangaon", "Jayashankar Bhupalpally", "Jogulamba Gadwal", "Kamareddy", "Karimnagar", "Khammam", "Kumuram Bheem", "Mahabubabad", "Mahabubnagar", "Mancherial", "Medak", "Medchal-Malkajgiri", "Mulugu", "Nagarkurnool", "Nalgonda", "Nirmal", "Nizamabad", "Peddapalli", "Rajanna Sircilla", "Rangareddy", "Sangareddy", "Siddipet", "Suryapet", "Vikarabad", "Wanaparthy", "Warangal Rural", "Warangal Urban", "Yadadri Bhuvanagiri"],
+        "Tripura": ["Dhalai", "Gomati", "Khowai", "North Tripura", "Sepahijala", "South Tripura", "Unakoti", "West Tripura"],
+        "Uttar Pradesh": ["Agra", "Aligarh", "Allahabad", "Ambedkar Nagar", "Amethi", "Amroha", "Auraiya", "Azamgarh", "Baghpat", "Bahraich", "Ballia", "Balrampur", "Banda", "Barabanki", "Bareilly", "Basti", "Bhadohi", "Bijnor", "Budaun", "Bulandshahr", "Chandauli", "Chitrakoot", "Deoria", "Etah", "Etawah", "Faizabad", "Farrukhabad", "Fatehpur", "Firozabad", "Gautam Buddha Nagar", "Ghaziabad", "Ghazipur", "Gonda", "Gorakhpur", "Hamirpur", "Hapur", "Hardoi", "Hathras", "Jalaun", "Jaunpur", "Jhansi", "Kannauj", "Kanpur Dehat", "Kanpur Nagar", "Kasganj", "Kaushambi", "Kheri", "Kushinagar", "Lalitpur", "Lucknow", "Maharajganj", "Mahoba", "Mainpuri", "Mathura", "Mau", "Meerut", "Mirzapur", "Moradabad", "Muzaffarnagar", "Pilibhit", "Pratapgarh", "RaeBareli", "Rampur", "Saharanpur", "Sambhal", "Sant Kabir Nagar", "Shahjahanpur", "Shamli", "Shravasti", "Siddharthnagar", "Sitapur", "Sonbhadra", "Sultanpur", "Unnao", "Varanasi"],
+        "Uttarakhand": ["Almora", "Bageshwar", "Chamoli", "Champawat", "Dehradun", "Haridwar", "Nainital", "Pauri Garhwal", "Pithoragarh", "Rudraprayag", "Tehri Garhwal", "Udham Singh Nagar", "Uttarkashi"],
+        "West Bengal": ["Alipurduar", "Bankura", "Birbhum", "Cooch Behar", "Dakshin Dinajpur", "Darjeeling", "Hooghly", "Howrah", "Jalpaiguri", "Jhargram", "Kalimpong", "Kolkata", "Malda", "Murshidabad", "Nadia", "North 24 Parganas", "Paschim Medinipur", "Paschim Bardhaman", "Purba Bardhaman", "Purba Medinipur", "Purulia", "South 24 Parganas", "Uttar Dinajpur"],
+        "Delhi": ["Central Delhi", "East Delhi", "New Delhi", "North Delhi", "North East Delhi", "North West Delhi", "Shahdara", "South Delhi", "South East Delhi", "South West Delhi", "West Delhi"],
+        "Jammu and Kashmir": ["Anantnag", "Bandipora", "Baramulla", "Budgam", "Doda", "Ganderbal", "Jammu", "Kathua", "Kishtwar", "Kulgam", "Kupwara", "Mamba", "Poonch", "Pulwama", "Rajouri", "Ramban", "Reasi", "Samba", "Shopian", "Srinagar", "Udhampur"],
+        "Ladakh": ["Kargil", "Leh"],
+        "Koshi Province": ["Bhojpur", "Dhankuta", "Ilam", "Jhapa", "Khotang", "Morang", "Okhaldhunga", "Panchthar", "Sankhuwasabha", "Solukhumbu", "Sunsari", "Taplejung", "Terhathum", "Udayapur"],
+        "Madhesh Province": ["Bara", "Dhanusha", "Mahottari", "Parsa", "Rautahat", "Saptari", "Sarlahi", "Siraha"],
+        "Bagmati Province": ["Bhaktapur", "Chitwan", "Dhading", "Dolakha", "Kathmandu", "Kavrepalanchok", "Lalitpur", "Makwanpur", "Nuwakot", "Ramechhap", "Rasuwa", "Sindhuli", "Sindhupalchok"],
+        "Gandaki Province": ["Baglung", "Gorkha", "Kaski", "Lamjung", "Manang", "Mustang", "Myagdi", "Nawalpur", "Parbat", "Syangja", "Tanahun"],
+        "Lumbini Province": ["Arghakhanchi", "Baglung", "Banke", "Bardiya", "Dang", "Gulmi", "Kapilvastu", "Parasi", "Palpa", "Pyuthan", "Rolpa", "Rukum East", "Rupandehi"],
+        "Karnali Province": ["Dailekh", "Dolpa", "Humla", "Jajarkot", "Jumla", "Kalikot", "Mugu", "Salyan", "Surkhet", "Rukum West"],
+        "Sudurpashchim Province": ["Achham", "Baitadi", "Bajhang", "Bajura", "Dadedhura", "Darcula", "Doti", "Kailali", "Kanchanpur"]
+    };
+
+    function updateDistricts() {
+        const stateSelect = document.getElementById('stateSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const selectedState = stateSelect.value;
+        
+        districtSelect.innerHTML = '';
+        
+        if (!selectedState) {
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = "{% if selected_lang == 'hi' %}-- पहले राज्य चुनें --{% elif selected_lang == 'ne' %}-- पहिले प्रदेश चुन्नुहोस् --{% else %}-- Select State First --{% endif %}";
+            districtSelect.appendChild(defaultOpt);
+            return;
+        }
+        
+        const districts = districtData[selectedState] || [];
+        const selectOpt = document.createElement('option');
+        selectOpt.value = '';
+        selectOpt.textContent = "{% if selected_lang == 'hi' %}-- जिला चुनें --{% elif selected_lang == 'ne' %}-- जिल्ला चुन्नुहोस् --{% else %}-- Select District --{% endif %}";
+        districtSelect.appendChild(selectOpt);
+        
+        districts.forEach(function(district) {
+            const opt = document.createElement('option');
+            opt.value = district;
+            opt.textContent = district;
+            districtSelect.appendChild(opt);
+        });
+    }
+
+    function togglePasswordVisibility(fieldId, iconEl) {
+        const passwordInput = document.getElementById(fieldId);
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            iconEl.classList.remove('fa-eye-slash');
+            iconEl.classList.add('fa-eye');
+        } else {
+            passwordInput.type = 'password';
+            iconEl.classList.remove('fa-eye');
+            iconEl.classList.add('fa-eye-slash');
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const stateSelect = document.getElementById('stateSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        
+        const savedState = "{{ form.state.value|default:'' }}";
+        const savedDistrict = "{{ form.district.value|default:'' }}";
+        
+        if (savedState) {
+            stateSelect.value = savedState;
+            updateDistricts();
+            if (savedDistrict) {
+                districtSelect.value = savedDistrict;
+            }
+        }
+    });
+</script>
+{% endblock %}
