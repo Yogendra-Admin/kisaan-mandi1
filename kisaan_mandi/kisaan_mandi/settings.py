@@ -16,7 +16,7 @@ if env_path.exists():
 
 SECRET_KEY = 'django-insecure-kisaan-mandi-secret-key-2024'
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
