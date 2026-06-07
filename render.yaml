@@ -1,0 +1,24 @@
+databases:
+  - name: kisaan_mandi_db
+    databaseName: kisaan_mandi
+    user: kisaan_admin
+    plan: free
+
+services:
+  - type: web
+    name: kisaan_mandi_web
+    plan: free
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn kisaan_mandi.wsgi:application --chdir kisaan_mandi"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kisaan_mandi_db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"

@@ -395,7 +395,7 @@ def payment_checkout(request, order_id):
                 'order_ids': ",".join(str(o.id) for o in orders),
                 'buyer': order.buyer.username
             }
-            if not razorpay_order_id or not razorpay_order_id.startswith('order_'):
+            if not razorpay_order_id or not razorpay_order_id.startswith('order_') or razorpay_order_id.startswith('order_mock_'):
                 razorpay_order = client.order.create(dict(
                     amount=amount_paise,
                     currency='INR',
@@ -408,7 +408,7 @@ def payment_checkout(request, order_id):
         except Exception as e:
             is_mock = True
             
-    if is_mock and (not razorpay_order_id or not razorpay_order_id.startswith('order_')):
+    if is_mock and (not razorpay_order_id or not razorpay_order_id.startswith('order_mock_')):
         import time
         new_razorpay_order_id = f"order_mock_{order.id}_{int(time.time())}"
         orders.update(razorpay_order_id=new_razorpay_order_id)
